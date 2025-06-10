@@ -77,19 +77,19 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
     date_range_str = f"{start_date_str} 至 {end_date.strftime('%d/%m/%Y')}"
 
     replacements = {
-        "單號:": f"單號: {invoice_number}",
-        "學生姓名：": f"學生姓名：{student_name}",
-        "堂數：": f"堂數：{total_lessons}",
-        "金額：": f"金額：${amount}",
-        "主科：": f"主科：{' / '.join(subjects)}",
-        "增值課程：": f"增值課程：{' / '.join(value_added_courses)}",
-        "上課期數範圍：": f"上課期數範圍：{date_range_str}",
+        "單號": f"單號: {invoice_number}",
+        "學生姓名": f"學生姓名：{student_name}",
+        "堂數": f"堂數：{total_lessons}",
+        "金額": f"金額：${amount}",
+        "主科": f"主科：{' / '.join(subjects)}",
+        "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
+        "上課期數範圍": f"上課期數範圍：{date_range_str}",
     }
 
     for para in doc.paragraphs:
-        for key, value in replacements.items():
-            if key in para.text:
-                para.text = value
+        for key, new_text in replacements.items():
+            if para.text.strip().startswith(key):
+                para.text = new_text
 
     insert_index = None
     for i, para in enumerate(doc.paragraphs):
@@ -112,7 +112,7 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
     return file_stream
 
 # Streamlit UI
-st.title("課程收據單生成器")
+st.title(":calendar: 課程收據單生成器")
 
 student_name = st.text_input("學生姓名")
 branch_name = st.selectbox("分校名稱", [
