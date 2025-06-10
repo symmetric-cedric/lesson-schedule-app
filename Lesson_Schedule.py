@@ -57,7 +57,7 @@ def generate_schedule(total_lessons, frequency_days, start_date, student_name, s
     return formatted
 
 # Streamlit UI
-st.title(":calendar: 課程日期安排 (淘大)")
+st.title(":calendar: 課程日期安排")
 
 student_name = st.text_input("Student Name")
 school_name = st.selectbox("Select School Branch", [
