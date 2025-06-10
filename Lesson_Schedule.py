@@ -5,7 +5,7 @@ from docx.shared import Pt
 from io import BytesIO
 
 # Display Logo
-st.image("logo.png", width=500)
+st.image("logo.png", width=400)
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -77,10 +77,10 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
     date_range_str = f"{start_date_str} 至 {end_date.strftime('%d/%m/%Y')}"
 
     replacements = {
-        "單號": f"單號: {invoice_number}",
-        "學生姓名": f"學生姓名：{student_name}",
-        "堂數": f"堂數：{total_lessons}",
-        "金額": f"金額：${amount}",
+        "單號:": f"單號: {invoice_number}",
+        "學生姓名：": f"學生姓名：{student_name}",
+        "堂數：": f"堂數：{total_lessons}",
+        "金額：": f"金額：${amount}",
         "主科": f"主科：{' / '.join(subjects)}",
         "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
         "上課期數範圍": f"上課期數範圍：{date_range_str}",
