@@ -5,7 +5,7 @@ from docx.shared import Pt
 from io import BytesIO
 
 # Display Logo
-st.image("logo.png", width=200)
+st.image("logo.png", width=500)
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -112,7 +112,7 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
     return file_stream
 
 # Streamlit UI
-st.title(":calendar: 課程收據單生成器")
+st.title("課程收據單生成器")
 
 student_name = st.text_input("學生姓名")
 branch_name = st.selectbox("分校名稱", [
