@@ -20,7 +20,7 @@ public_holidays = {
 }
 holiday_dates = set(datetime.strptime(date_str, "%d %B %Y").date() for date_str in public_holidays)
 
-# Schedule Functions
+# Schedule Function
 def generate_schedule(total_lessons, frequency_days, start_date):
     frequency_indices = sorted([weekday_map[day] for day in frequency_days])
     lessons = []
@@ -72,7 +72,7 @@ def create_word_doc(student_name, branch_name, invoice_number, amount, total_les
     run = p.add_run(lesson_times)
     run.font.color.rgb = RGBColor(128, 0, 128)
 
-    # Start Date
+    # Start Date (no parsing needed — just strftime)
     start_date_str = start_date.strftime('%d/%m/%Y')
     doc.add_paragraph("開始日期：").add_run(start_date_str).font.color.rgb = RGBColor(255, 0, 0)
 
@@ -118,4 +118,5 @@ if st.button("生成收據單"):
         st.download_button("📥 下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
     else:
         st.error("請填妥所有必填欄位。")
+
 
