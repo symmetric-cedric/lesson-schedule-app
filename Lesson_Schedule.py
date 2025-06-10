@@ -4,6 +4,9 @@ from docx import Document
 from docx.shared import Pt
 from io import BytesIO
 
+# Display Logo
+st.image("logo.png", width=200)
+
 # Weekday and Holiday Setup
 weekday_map = {
     "星期一": 0, "星期二": 1, "星期三": 2, "星期四": 3, "星期五": 4, "星期六": 5, "星期日": 6
@@ -18,7 +21,7 @@ public_holidays = {
 }
 holiday_dates = set(datetime.strptime(date_str, "%d %B %Y").date() for date_str in public_holidays)
 
-template_path = "Template.doc"
+template_path = "Template.docx"
 
 lesson_time_options = [
     "9:30-11:00", "10:00-11:30", "10:30-12:00", "11:00-12:30",
