@@ -46,10 +46,10 @@ def generate_schedule(total_lessons, frequency_days, start_date, student_name, s
     return formatted
 
 # Streamlit UI
-st.title(":calendar: Lesson Schedule Generator")
+st.title(":calendar: Lesson Schedule Generator (淘大)")
 
 student_name = st.text_input("Student Name")
-school_name = st.text_input("School Name")
+school_name = "創憶學坊(淘大)"
 start_date = st.date_input("Start Date", format="YYYY-MM-DD")
 total_lessons = st.number_input("Total Number of Lessons", min_value=1, max_value=100, step=1)
 
