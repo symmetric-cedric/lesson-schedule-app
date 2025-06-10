@@ -3,13 +3,13 @@ from datetime import datetime, timedelta
 
 # Weekday and Holiday Setup
 weekday_map = {
-    "Monday": 0,
-    "Tuesday": 1,
-    "Wednesday": 2,
-    "Thursday": 3,
-    "Friday": 4,
-    "Saturday": 5,
-    "Sunday": 6
+    "星期一": 0,
+    "星期二": 1,
+    "星期三": 2,
+    "星期四": 3,
+    "星期五": 4,
+    "星期六": 5,
+    "星期日": 6
 }
 
 weekday_chinese = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
@@ -23,6 +23,17 @@ public_holidays = {
 }
 
 holiday_dates = set(datetime.strptime(date_str, "%d %B %Y").date() for date_str in public_holidays)
+
+def calculate_weeks_range(total_lessons, lessons_per_week, lessons_dates):
+    base_weeks = (total_lessons / lessons_per_week) * 5 / 4
+    base_weeks = int(base_weeks) if base_weeks == int(base_weeks) else int(base_weeks) + 1
+    
+    # Count lessons overlapping holidays
+    holiday_count = sum(1 for d in lessons_dates if d in holiday_dates)
+    
+    total_weeks = base_weeks + holiday_count
+    
+    return total_weeks
 
 def generate_schedule(total_lessons, frequency_days, start_date, student_name, school_name):
     frequency_indices = sorted([weekday_map[day] for day in frequency_days])
@@ -49,7 +60,13 @@ def generate_schedule(total_lessons, frequency_days, start_date, student_name, s
 st.title(":calendar: 課程日期安排 (淘大)")
 
 student_name = st.text_input("Student Name")
-school_name = "創憶學坊(淘大)"
+school_name = st.selectbox("Select School Branch", [
+    "創憶學坊(淘大)",
+    "創憶學坊(麗港城)",
+    "創憶學坊(青衣)",
+    "創憶學坊(港景峯)",
+    "創憶學坊(鑽石山)"
+])
 start_date = st.date_input("Start Date", format="YYYY-MM-DD")
 total_lessons = st.number_input("Total Number of Lessons", min_value=1, max_value=100, step=1)
 
@@ -62,6 +79,13 @@ if st.button("Generate Schedule"):
         st.success("Here is the schedule:")
         for line in schedule:
             st.write(line)
+        
+        # Calculate weeks range
+        lessons_per_week = len(selected_days)
+        total_weeks = calculate_weeks_range(total_lessons, lessons_per_week, [datetime.strptime(line.split('|')[1].strip().split(' ')[0] + ' ' + line.split('|')[1].strip().split(' ')[1] + ' ' + line.split('|')[1].strip().split(' ')[2], '%Y年 %m 月 %d 日').date() for line in schedule])
+        
+        end_date = start_date + timedelta(weeks=total_weeks) - timedelta(days=1)
+        st.info(f"課程總期數範圍: {start_date} 至 {end_date} （共 {total_weeks} 週）")
     else:
         st.error("Please fill in all fields correctly.")
 
