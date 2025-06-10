@@ -1,10 +1,8 @@
 import streamlit as st
 from datetime import datetime, timedelta
 from docx import Document
-from docx.shared import Pt, RGBColor, Inches
-from docx.enum.text import WD_ALIGN_PARAGRAPH
+from docx.shared import Pt
 from io import BytesIO
-import os
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -19,6 +17,8 @@ public_holidays = {
     "7 October 2025", "29 October 2025", "25 December 2025", "26 December 2025"
 }
 holiday_dates = set(datetime.strptime(date_str, "%d %B %Y").date() for date_str in public_holidays)
+
+template_path = "Template.doc"
 
 lesson_time_options = [
     "9:30-11:00", "10:00-11:30", "10:30-12:00", "11:00-12:30",
@@ -45,7 +45,7 @@ def generate_schedule(total_lessons, frequency_days, start_date):
         for weekday in frequency_indices:
             days_ahead = (weekday - current_date.weekday() + 7) % 7
             lesson_date = current_date + timedelta(days=days_ahead)
-            if lesson_date >= start_date:
+            if lesson_date >= start_date and lesson_date not in holiday_dates:
                 lessons.append(lesson_date)
                 if len(lessons) == total_lessons:
                     break
@@ -64,76 +64,44 @@ def calculate_week_range(total_lessons, frequency_per_week, lesson_dates):
     week_range += holiday_count
     return week_range
 
-def create_word_doc(student_name, branch_name, invoice_number, amount, total_lessons,
-                    subjects, value_added_courses, start_date,
-                    lesson_dates, week_range, day_time_pairs):
-    doc = Document()
-
-    if os.path.exists("logo.png"):
-        doc.add_picture("logo.png", width=Inches(2))
-        doc.add_paragraph()
-
-    def add_colored_text(paragraph, text, color_rgb, bold=False, size=16):
-        run = paragraph.add_run(text)
-        font = run.font
-        font.size = Pt(size)
-        font.color.rgb = RGBColor(*color_rgb)
-        font.bold = bold
-
-    title = doc.add_paragraph()
-    title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    add_colored_text(title, "Creat Learning\n創憶學坊", (0, 128, 0), True, 24)
-
-    branch = doc.add_paragraph()
-    branch.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    add_colored_text(branch, f"{branch_name} 分校", (0, 0, 255), False, 18)
-    doc.add_paragraph()
-
-    p = doc.add_paragraph()
-    add_colored_text(p, "學生姓名：", (0, 0, 0), True)
-    add_colored_text(p, f"{student_name}\n", (255, 0, 0))
-
-    p = doc.add_paragraph()
-    add_colored_text(p, "單號：", (0, 0, 0), True)
-    add_colored_text(p, f"{invoice_number}\n", (255, 0, 0))
-
-    p = doc.add_paragraph()
-    add_colored_text(p, "金額：$", (0, 0, 0), True)
-    add_colored_text(p, f"{amount}\n", (255, 0, 0))
-
-    p = doc.add_paragraph()
-    add_colored_text(p, "堂數：", (0, 0, 0), True)
-    add_colored_text(p, f"{total_lessons}\n", (255, 0, 0))
-    doc.add_paragraph()
-
-    p = doc.add_paragraph()
-    add_colored_text(p, "主科：", (0, 0, 0), True)
-    add_colored_text(p, f"{' / '.join(subjects)}\n", (128, 0, 128))
-
-    p = doc.add_paragraph()
-    add_colored_text(p, "增值課程：", (0, 0, 0), True)
-    add_colored_text(p, f"{' / '.join(value_added_courses)}\n", (128, 0, 128))
-    doc.add_paragraph()
+def fill_template_doc(student_name, branch_name, invoice_number, amount, total_lessons,
+                      subjects, value_added_courses, start_date,
+                      lesson_dates, week_range, day_time_pairs):
+    doc = Document(template_path)
 
     start_date_str = start_date.strftime('%d/%m/%Y')
-    p = doc.add_paragraph()
-    add_colored_text(p, "開始日期：", (0, 0, 0), True)
-    add_colored_text(p, f"{start_date_str}\n", (255, 0, 0))
-
     end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
-    p = doc.add_paragraph()
-    add_colored_text(p, "上課期數範圍：", (0, 0, 0), True)
-    add_colored_text(p, f"{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}\n", (0, 0, 0))
-    doc.add_paragraph()
+    date_range_str = f"{start_date_str} 至 {end_date.strftime('%d/%m/%Y')}"
 
-    p = doc.add_paragraph()
-    add_colored_text(p, "上課日期：\n", (0, 0, 0), True)
-    for i, date in enumerate(lesson_dates, 1):
-        date_str = date.strftime('%d/%m/%Y')
-        weekday_str = weekday_chinese[date.weekday()]
-        time_str = day_time_pairs.get(weekday_str, "")
-        date_para = doc.add_paragraph(f"{i}. {date_str} ({weekday_str}) {time_str}")
-        date_para.paragraph_format.left_indent = Inches(0.3)
+    replacements = {
+        "單號:": f"單號: {invoice_number}",
+        "學生姓名：": f"學生姓名：{student_name}",
+        "堂數：": f"堂數：{total_lessons}",
+        "金額：": f"金額：${amount}",
+        "主科：": f"主科：{' / '.join(subjects)}",
+        "增值課程：": f"增值課程：{' / '.join(value_added_courses)}",
+        "上課期數範圍：": f"上課期數範圍：{date_range_str}",
+    }
+
+    for para in doc.paragraphs:
+        for key, value in replacements.items():
+            if key in para.text:
+                para.text = value
+
+    insert_index = None
+    for i, para in enumerate(doc.paragraphs):
+        if "上課日期" in para.text:
+            insert_index = i + 1
+            break
+
+    if insert_index is not None:
+        for i, date in enumerate(lesson_dates, 1):
+            date_str = date.strftime('%d/%m/%Y')
+            weekday_str = weekday_chinese[date.weekday()]
+            time_str = day_time_pairs.get(weekday_str, "")
+            new_para = doc.paragraphs[insert_index].insert_paragraph_before(f"{i}. {date_str} ({weekday_str}) {time_str}")
+            new_para.paragraph_format.left_indent = Pt(12)
+            insert_index += 1
 
     file_stream = BytesIO()
     doc.save(file_stream)
@@ -168,9 +136,9 @@ if st.button("生成收據單"):
         selected_days = list(day_time_pairs.keys())
         lesson_dates = generate_schedule(total_lessons, selected_days, start_date)
         week_range = calculate_week_range(total_lessons, len(selected_days), lesson_dates)
-        doc_file = create_word_doc(student_name, branch_name, invoice_number, amount,
-                                   total_lessons, subjects, value_added_courses,
-                                   start_date, lesson_dates, week_range, day_time_pairs)
+        doc_file = fill_template_doc(student_name, branch_name, invoice_number, amount,
+                                     total_lessons, subjects, value_added_courses,
+                                     start_date, lesson_dates, week_range, day_time_pairs)
 
         st.success("收據單已生成！")
         st.download_button("📥 下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
