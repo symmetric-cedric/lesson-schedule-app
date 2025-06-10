@@ -5,7 +5,7 @@ from docx.shared import Pt
 from io import BytesIO
 
 # Display Logo
-#st.image("logo.png", width=600)
+st.image("logo.png", width=600)
 
 # Weekday and Holiday Setup
 weekday_map = {
