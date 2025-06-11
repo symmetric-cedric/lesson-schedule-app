@@ -2,6 +2,8 @@ import streamlit as st
 from datetime import datetime, timedelta
 from docx import Document
 from docx.shared import Pt
+from docx.enum.table import WD_TABLE_ALIGNMENT
+from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
 # Display Logo
@@ -99,19 +101,29 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
             break
 
     if insert_index is not None:
+        doc.paragraphs.insert(insert_index, doc.add_paragraph(""))
+        insert_index += 1
+
         table = doc.add_table(rows=1, cols=3)
-        table.style = 'Table Grid'
         hdr_cells = table.rows[0].cells
         hdr_cells[0].text = "堂數"
         hdr_cells[1].text = "日期"
         hdr_cells[2].text = "時間"
+
+        for cell in hdr_cells:
+            for paragraph in cell.paragraphs:
+                paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
         for i, date in enumerate(lesson_dates, 1):
             row_cells = table.add_row().cells
             row_cells[0].text = str(i)
             row_cells[1].text = f"{date.strftime('%d/%m/%Y')} ({weekday_chinese[date.weekday()]})"
             row_cells[2].text = day_time_pairs.get(weekday_chinese[date.weekday()], "")
+            for cell in row_cells:
+                for paragraph in cell.paragraphs:
+                    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
 
+        table.alignment = WD_TABLE_ALIGNMENT.CENTER
         doc.paragraphs[insert_index - 1]._element.addnext(table._element)
 
     file_stream = BytesIO()
