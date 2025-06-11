@@ -86,7 +86,7 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
         "主科": f"主科：{' / '.join(subjects)}",
         "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
         "上課期數範圍": f"上課期數範圍：{date_range_str}",
-        "分校": "{branch_name}"
+        "分校": branch_name
     }
 
     for para in doc.paragraphs:
