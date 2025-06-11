@@ -84,6 +84,7 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
         "主科": f"主科：{' / '.join(subjects)}",
         "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
         "上課期數範圍": f"上課期數範圍：{date_range_str}",
+        "分校": "{branch_name}"
     }
 
     for para in doc.paragraphs:
@@ -98,13 +99,20 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
             break
 
     if insert_index is not None:
+        table = doc.add_table(rows=1, cols=3)
+        table.style = 'Table Grid'
+        hdr_cells = table.rows[0].cells
+        hdr_cells[0].text = "堂數"
+        hdr_cells[1].text = "日期"
+        hdr_cells[2].text = "時間"
+
         for i, date in enumerate(lesson_dates, 1):
-            date_str = date.strftime('%d/%m/%Y')
-            weekday_str = weekday_chinese[date.weekday()]
-            time_str = day_time_pairs.get(weekday_str, "")
-            new_para = doc.paragraphs[insert_index].insert_paragraph_before(f"{i}. {date_str} ({weekday_str}) {time_str}")
-            new_para.paragraph_format.left_indent = Pt(12)
-            insert_index += 1
+            row_cells = table.add_row().cells
+            row_cells[0].text = str(i)
+            row_cells[1].text = f"{date.strftime('%d/%m/%Y')} ({weekday_chinese[date.weekday()]})"
+            row_cells[2].text = day_time_pairs.get(weekday_chinese[date.weekday()], "")
+
+        doc.paragraphs[insert_index - 1]._element.addnext(table._element)
 
     file_stream = BytesIO()
     doc.save(file_stream)
@@ -116,7 +124,7 @@ st.title(":calendar: 課程收據單生成器")
 
 student_name = st.text_input("學生姓名")
 branch_name = st.selectbox("分校名稱", [
-    "創憶學坊(淘大)", "創憶學坊(麗港城)", "創憶學坊(青衣)", "創憶學坊(港景峯)", "創憶學坊(鑽石山)"
+    "九龍灣(淘大)分校", "藍田(麗港城)分校", "青衣(青怡)分校", "九龍站(港景峯)分校", "鑽石山(萬迪廣場)分校"
 ])
 invoice_number = st.text_input("單號")
 amount = st.text_input("金額")
