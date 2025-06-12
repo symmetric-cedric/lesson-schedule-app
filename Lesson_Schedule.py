@@ -44,18 +44,23 @@ value_added_options = [
 def generate_schedule(total_lessons, frequency_days, start_date):
     frequency_indices = sorted([weekday_map[day] for day in frequency_days])
     lessons = []
+    skipped_holidays = []
     current_date = start_date
 
     while len(lessons) < total_lessons:
         for weekday in frequency_indices:
             days_ahead = (weekday - current_date.weekday() + 7) % 7
             lesson_date = current_date + timedelta(days=days_ahead)
-            if lesson_date >= start_date and lesson_date not in holiday_dates:
-                lessons.append(lesson_date)
-                if len(lessons) == total_lessons:
-                    break
+            if lesson_date >= start_date:
+                if lesson_date in holiday_dates:
+                    skipped_holidays.append(lesson_date)
+                else:
+                    lessons.append(lesson_date)
+                    if len(lessons) == total_lessons:
+                        break
         current_date += timedelta(days=7)
-    return lessons
+
+    return lessons, skipped_holidays
 
 def calculate_week_range(total_lessons, frequency_per_week, lesson_dates):
     key_freq = frequency_per_week if frequency_per_week < 3 else 3
@@ -71,7 +76,7 @@ def calculate_week_range(total_lessons, frequency_per_week, lesson_dates):
 
 def fill_template_doc(student_name, branch_name, invoice_number, amount, total_lessons,
                       subjects, value_added_courses, start_date,
-                      lesson_dates, week_range, day_time_pairs):
+                      lesson_dates, week_range, day_time_pairs, skipped_holidays):
     doc = Document(template_path)
 
     start_date_str = start_date.strftime('%d/%m/%Y')
@@ -126,6 +131,16 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
         table.alignment = WD_TABLE_ALIGNMENT.CENTER
         doc.paragraphs[insert_index - 1]._element.addnext(table._element)
 
+    # Insert skipped holidays if any
+    if skipped_holidays:
+        skipped_lines = ["公眾假期 (休息):"] + [
+            f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
+        ]
+        for para in doc.paragraphs:
+            if para.text.strip().startswith("公眾假期 (休息):"):
+                para.text = '\n'.join(skipped_lines)
+                break
+
     file_stream = BytesIO()
     doc.save(file_stream)
     file_stream.seek(0)
@@ -157,14 +172,14 @@ start_date = st.date_input("開始日期", format="YYYY-MM-DD")
 if st.button("生成收據單"):
     if all([student_name, branch_name, invoice_number, amount, subjects, day_time_pairs]):
         selected_days = list(day_time_pairs.keys())
-        lesson_dates = generate_schedule(total_lessons, selected_days, start_date)
+        lesson_dates, skipped_holidays = generate_schedule(total_lessons, selected_days, start_date)
         week_range = calculate_week_range(total_lessons, len(selected_days), lesson_dates)
         doc_file = fill_template_doc(student_name, branch_name, invoice_number, amount,
                                      total_lessons, subjects, value_added_courses,
-                                     start_date, lesson_dates, week_range, day_time_pairs)
+                                     start_date, lesson_dates, week_range, day_time_pairs, skipped_holidays)
 
         st.success("收據單已生成！")
-        st.download_button("📥 下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
+        st.download_button("\ud83d\udcc5 下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
     else:
         st.error("請填妥所有必填欄位。")
 
