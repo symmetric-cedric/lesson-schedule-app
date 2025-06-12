@@ -133,12 +133,12 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
 
     # Insert skipped holidays if any
     for para in doc.paragraphs:
-        if para.text.strip().startswith("公眾假期 (休息):"):
+        if "公眾假期 (休息):" in para.text:
             if skipped_holidays:
-                skipped_lines = ["公眾假期 (休息):"] + [
-                    f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
-                ]
-                para.text = '\n'.join(skipped_lines)
+                para.clear()
+                para.add_run("公眾假期 (休息):\n")
+                for d in skipped_holidays:
+                    para.add_run(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})\n")
             else:
                 para.text = ""
             break
