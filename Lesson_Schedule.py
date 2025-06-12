@@ -132,14 +132,16 @@ def fill_template_doc(student_name, branch_name, invoice_number, amount, total_l
         doc.paragraphs[insert_index - 1]._element.addnext(table._element)
 
     # Insert skipped holidays if any
-    if skipped_holidays:
-        skipped_lines = ["公眾假期 (休息):"] + [
-            f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
-        ]
-        for para in doc.paragraphs:
-            if para.text.strip().startswith("公眾假期 (休息):"):
+    for para in doc.paragraphs:
+        if para.text.strip().startswith("公眾假期 (休息):"):
+            if skipped_holidays:
+                skipped_lines = ["公眾假期 (休息):"] + [
+                    f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
+                ]
                 para.text = '\n'.join(skipped_lines)
-                break
+            else:
+                para.text = ""
+            break
 
     file_stream = BytesIO()
     doc.save(file_stream)
