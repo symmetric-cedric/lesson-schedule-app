@@ -192,21 +192,34 @@ if st.button("生成收據單"):
 
 # Print bill info on screen
 st.subheader("📄 課程資料")
-st.write(f"**學生姓名：** {student_name}")
-st.write(f"**分校：** {branch_name}")
+st.write(branch_name)
 st.write(f"**單號：** {invoice_number}")
-st.write(f"**金額：** ${amount}")
+st.write(f"**學生姓名：** {student_name}")
 st.write(f"**堂數：** {total_lessons}")
+st.write(f"**學費金額：** ${amount}")
 st.write(f"**主科：** {' / '.join(subjects)}")
 st.write(f"**增值課程：** {' / '.join(value_added_courses)}")
+
+# Date range
+end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
+st.write(f"**📆 上課期數範圍：** {start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}")
+st.write("**所有課程（包括補堂）必須於限期内完成，逾期作廢，剩餘的課堂不會作任何退款**")
 
 # Lesson schedule
 st.write("**📅 上課日期安排：**")
 for i, date in enumerate(lesson_dates, 1):
     weekday_str = weekday_chinese[date.weekday()]
     time_str = day_time_pairs.get(weekday_str, "")
-    st.write(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str}) {time_str}")
+    st.write(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str})")
 
+
+
+st.write("**補堂：**\n 補堂時間一經確定，不可更改\n 缺席補堂將不會再安排補堂")
+st.write("➿➿➿➿➿➿➿➿➿➿")
+st.write("📣家長須知 📣")
+st.write("1. 返學安排🎒 \n - 上課前，須先上洗手間🚾 \n - ⁠學生遲到或無故缺席均不設補時或補課❌")
+st.write("2. 放學安排🎒 \n - 家長須準時接送子女放學 ⏰")
+st.write("3. 公眾假期 🗓 ")
 # Skipped holidays
 if skipped_holidays:
     st.write("**❌ 公眾假期 (休息)：**")
@@ -214,9 +227,5 @@ if skipped_holidays:
         st.write(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
 else:
     st.write("**✅ 無需休息的公眾假期。**")
-
-# Date range
-end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
-st.write(f"**📆 上課期數範圍：** {start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}")
-
-
+st.write("4. 請假安排:\n i.事假\n - 須上課3天前以短訊通知，方可安排補堂\n - 補堂須於課程結束日前完成\n - 不足3天或即日通知，不設❌補堂❌\nii. 病假😷\n- 須後補醫生証明📝，方可安排補堂\n - 補堂須於課程結束日前完成")
+st.write("5. 惡劣天氣安排\n 天文台於上課前兩小時發出惡劣天氣警告信號，本中心將作出以下安排：\n - 黃色、紅色暴雨警告\n - ⁠三號颱風訊號\n ✅本中心會照常上課✅（家長可自行決定子女會否上課，上課前2小時以短訊通知請假，可安排補堂）")
