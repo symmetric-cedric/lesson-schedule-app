@@ -133,23 +133,7 @@ if st.button("生成收據單"):
         bill_text = '\n'.join(bill_text_lines)
 
         st.subheader("📋 複製以下文字：")
-        st.text_area(" ", value=bill_text, height=500, key="bill_text_area")
-
-        # Inject JS Copy button
-        copy_js = f"""
-        <script>
-        function copyToClipboard() {{
-            var text = document.getElementById("bill_text_area").value;
-            navigator.clipboard.writeText(text).then(function() {{
-                alert('已複製到剪貼簿！');
-            }}, function(err) {{
-                alert('複製失敗: ' + err);
-            }});
-        }}
-        </script>
-        <button onclick="copyToClipboard()" style="padding:8px 16px; background:#007bff; color:white; border:none; border-radius:4px;">📄 複製文字到剪貼簿</button>
-        """
-        st.markdown(copy_js, unsafe_allow_html=True)
+        st.code(bill_text, language="text")
 
         st.success("收據單已生成！")
     else:
