@@ -7,7 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
 # Display Logo
-#st.image("logo.png", width=400)
+st.image("logo.png", width=400)
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -123,19 +123,104 @@ if st.button("生成收據單"):
             bill_text_lines.append(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str}) {time_str}")
 
         if skipped_holidays:
-            bill_text_lines.append("\n❌ 公眾假期 (休息):")
+            bill_text_lines.append("
+❌ 公眾假期 (休息):")
             for d in skipped_holidays:
                 bill_text_lines.append(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
         else:
-            bill_text_lines.append("\n✅ 無需休息的公眾假期。")
+            bill_text_lines.append("
+✅ 無需休息的公眾假期。")
 
-        bill_text_lines.append("\n📌 所有課程必須於限期內完成，逾期作廢。")
-        bill_text = '\n'.join(bill_text_lines)
+        bill_text_lines.append("
+📌 所有課程必須於限期內完成，逾期作廢。")
+        bill_text = '
+'.join(bill_text_lines)
 
         st.subheader("📋 複製以下文字：")
         st.code(bill_text, language="text")
 
+        # Generate Word document
+        def fill_template_doc(student_name, branch_name, invoice_number, amount, total_lessons,
+                              subjects, value_added_courses, start_date,
+                              lesson_dates, week_range, day_time_pairs, skipped_holidays):
+            doc = Document(template_path)
+
+            start_date_str = start_date.strftime('%d/%m/%Y')
+            end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
+            date_range_str = f"{start_date_str} 至 {end_date.strftime('%d/%m/%Y')}"
+
+            replacements = {
+                "單號:": f"單號: {invoice_number}",
+                "學生姓名：": f"學生姓名：{student_name}",
+                "堂數：": f"堂數：{total_lessons}",
+                "金額：": f"金額：${amount}",
+                "主科": f"主科：{' / '.join(subjects)}",
+                "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
+                "上課期數範圍": f"上課期數範圍：{date_range_str}",
+                "分校": branch_name
+            }
+
+            for para in doc.paragraphs:
+                for key, new_text in replacements.items():
+                    if para.text.strip().startswith(key):
+                        para.text = new_text
+
+            insert_index = None
+            for i, para in enumerate(doc.paragraphs):
+                if "上課日期" in para.text:
+                    insert_index = i + 1
+                    break
+
+            if insert_index is not None:
+                doc.paragraphs.insert(insert_index, doc.add_paragraph(""))
+                insert_index += 1
+
+                table = doc.add_table(rows=1, cols=3)
+                hdr_cells = table.rows[0].cells
+                hdr_cells[0].text = "堂數"
+                hdr_cells[1].text = "日期"
+                hdr_cells[2].text = "時間"
+
+                for cell in hdr_cells:
+                    for paragraph in cell.paragraphs:
+                        paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                for i, date in enumerate(lesson_dates, 1):
+                    row_cells = table.add_row().cells
+                    row_cells[0].text = str(i)
+                    row_cells[1].text = f"{date.strftime('%d/%m/%Y')} ({weekday_chinese[date.weekday()]})"
+                    row_cells[2].text = day_time_pairs.get(weekday_chinese[date.weekday()], "")
+                    for cell in row_cells:
+                        for paragraph in cell.paragraphs:
+                            paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
+
+                table.alignment = WD_TABLE_ALIGNMENT.CENTER
+                doc.paragraphs[insert_index - 1]._element.addnext(table._element)
+
+            for para in doc.paragraphs:
+                if para.text.strip().startswith("公眾假期 (休息):"):
+                    if skipped_holidays:
+                        skipped_lines = ["公眾假期 (休息):"] + [
+                            f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
+                        ]
+                        para.text = '
+'.join(skipped_lines)
+                    else:
+                        para.text = ""
+                    break
+
+            file_stream = BytesIO()
+            doc.save(file_stream)
+            file_stream.seek(0)
+            return file_stream
+
+        doc_file = fill_template_doc(student_name, branch_name, invoice_number, amount,
+                                     total_lessons, subjects, value_added_courses,
+                                     start_date, lesson_dates, week_range, day_time_pairs, skipped_holidays)
+
+        st.download_button("📅 下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
         st.success("收據單已生成！")
     else:
         st.error("請填妥所有必填欄位。")
+
 
