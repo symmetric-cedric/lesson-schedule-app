@@ -7,7 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
 # Display Logo
-#st.image("logo.png", width=400)
+st.image("logo.png", width=400)
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -181,6 +181,7 @@ if st.button("生成收據單"):
         selected_days = list(day_time_pairs.keys())
         lesson_dates, skipped_holidays = generate_schedule(total_lessons, selected_days, start_date)
         week_range = calculate_week_range(total_lessons, len(selected_days), lesson_dates)
+        end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
         doc_file = fill_template_doc(student_name, branch_name, invoice_number, amount,
                                      total_lessons, subjects, value_added_courses,
                                      start_date, lesson_dates, week_range, day_time_pairs, skipped_holidays)
