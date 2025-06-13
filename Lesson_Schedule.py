@@ -7,7 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
 # Display Logo
-st.image("logo.png", width=600)
+st.image("logo.png", width=200)
 
 # Weekday and Holiday Setup
 weekday_map = {
