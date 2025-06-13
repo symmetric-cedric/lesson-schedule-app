@@ -63,6 +63,11 @@ def generate_schedule(total_lessons, frequency_days, start_date):
     return lessons, skipped_holidays
 
 def calculate_week_range(total_lessons, frequency_per_week, lesson_dates):
+    if total_lessons == 10:
+        return 10
+    if total_lessons == 30:
+        return 30
+
     key_freq = frequency_per_week if frequency_per_week < 3 else 3
     week_range_map = {
         1: {4: 5, 12: 15, 24: 30},
@@ -157,7 +162,7 @@ branch_name = st.selectbox("分校名稱", [
 ])
 invoice_number = st.text_input("單號")
 amount = st.text_input("金額")
-total_lessons = st.selectbox("堂數", [4, 8, 12, 24, 36, 48, 72])
+total_lessons = st.selectbox("堂數", [4, 8, 10, 12, 24, 30, 36, 48, 72])
 
 day_time_pairs = {}
 st.subheader("上課日及時間")
@@ -184,4 +189,34 @@ if st.button("生成收據單"):
         st.download_button("\ud83d\udcc5 下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
     else:
         st.error("請填妥所有必填欄位。")
+
+# Print bill info on screen
+st.subheader("📄 課程資料")
+st.write(f"**學生姓名：** {student_name}")
+st.write(f"**分校：** {branch_name}")
+st.write(f"**單號：** {invoice_number}")
+st.write(f"**金額：** ${amount}")
+st.write(f"**堂數：** {total_lessons}")
+st.write(f"**主科：** {' / '.join(subjects)}")
+st.write(f"**增值課程：** {' / '.join(value_added_courses)}")
+
+# Lesson schedule
+st.write("**📅 上課日期安排：**")
+for i, date in enumerate(lesson_dates, 1):
+    weekday_str = weekday_chinese[date.weekday()]
+    time_str = day_time_pairs.get(weekday_str, "")
+    st.write(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str}) {time_str}")
+
+# Skipped holidays
+if skipped_holidays:
+    st.write("**❌ 公眾假期 (休息)：**")
+    for d in skipped_holidays:
+        st.write(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
+else:
+    st.write("**✅ 無需休息的公眾假期。**")
+
+# Date range
+end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
+st.write(f"**📆 上課期數範圍：** {start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}")
+
 
