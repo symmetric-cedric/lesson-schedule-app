@@ -7,7 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
 # Display Logo
-st.image("logo.png", width=1000)
+st.image("logo.png", width=400)
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -227,5 +227,7 @@ if skipped_holidays:
         st.write(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
 else:
     st.write("**✅ 無需休息的公眾假期。**")
-st.write("4. 請假安排:\n i.事假\n - 須上課3天前以短訊通知，方可安排補堂\n - 補堂須於課程結束日前完成\n - 不足3天或即日通知，不設❌補堂❌\nii. 病假😷\n- 須後補醫生証明📝，方可安排補堂\n - 補堂須於課程結束日前完成")
+st.write("4. 請假安排:")
+st.write("i.事假\n - 須上課3天前以短訊通知，方可安排補堂\n - 補堂須於課程結束日前完成\n - 不足3天或即日通知，不設❌補堂❌")
+st.write("ii. 病假😷\n- 須後補醫生証明📝，方可安排補堂\n - 補堂須於課程結束日前完成")
 st.write("5. 惡劣天氣安排\n 天文台於上課前兩小時發出惡劣天氣警告信號，本中心將作出以下安排：\n - 黃色、紅色暴雨警告\n - ⁠三號颱風訊號\n ✅本中心會照常上課✅（家長可自行決定子女會否上課，上課前2小時以短訊通知請假，可安排補堂）")
