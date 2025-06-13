@@ -186,39 +186,39 @@ if st.button("生成收據單"):
     else:
         st.error("請填妥所有必填欄位。")
 
-        # Build text content for clipboard
-        bill_text_lines = [
-            f"分校：{branch_name}",
-            f"單號：{invoice_number}",
-            f"學生姓名：{student_name}",
-            f"堂數：{total_lessons}",
-            f"學費金額：${amount}",
-            f"主科：{' / '.join(subjects)}",
-            f"增值課程：{' / '.join(value_added_courses)}",
-            f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}",
-            "",
-            "📅 上課日期安排："
-        ]
-        for i, date in enumerate(lesson_dates, 1):
-            weekday_str = weekday_chinese[date.weekday()]
-            time_str = day_time_pairs.get(weekday_str, "")
-            bill_text_lines.append(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str}) {time_str}")
+    # Build text content for clipboard
+    bill_text_lines = [
+        f"分校：{branch_name}",
+        f"單號：{invoice_number}",
+        f"學生姓名：{student_name}",
+        f"堂數：{total_lessons}",
+        f"學費金額：${amount}",
+        f"主科：{' / '.join(subjects)}",
+        f"增值課程：{' / '.join(value_added_courses)}",
+        f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}",
+        "",
+        "📅 上課日期安排："
+    ]
+    for i, date in enumerate(lesson_dates, 1):
+        weekday_str = weekday_chinese[date.weekday()]
+        time_str = day_time_pairs.get(weekday_str, "")
+        bill_text_lines.append(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str}) {time_str}")
 
-        if skipped_holidays:
-            bill_text_lines.append("\n❌ 公眾假期 (休息):")
-            for d in skipped_holidays:
-                bill_text_lines.append(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
-        else:
-            bill_text_lines.append("\n✅ 無需休息的公眾假期。")
-
-        bill_text_lines.append("\n📌 所有課程必須於限期內完成，逾期作廢。")
-        bill_text = '\n'.join(bill_text_lines)
-
-        st.subheader("📋 複製以下文字：")
-        st.code(bill_text, language="text")
-
-        st.success("收據單已生成！")
+    if skipped_holidays:
+        bill_text_lines.append("\n❌ 公眾假期 (休息):")
+        for d in skipped_holidays:
+            bill_text_lines.append(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
     else:
-        st.error("請填妥所有必填欄位。")
+        bill_text_lines.append("\n✅ 無需休息的公眾假期。")
+
+    bill_text_lines.append("\n📌 所有課程必須於限期內完成，逾期作廢。")
+    bill_text = '\n'.join(bill_text_lines)
+
+    st.subheader("📋 複製以下文字：")
+    st.code(bill_text, language="text")
+
+    st.success("收據單已生成！")
+else:
+    st.error("請填妥所有必填欄位。")
 
 
