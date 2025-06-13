@@ -7,7 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
 # Display Logo
-st.image("logo.png", width=400)
+#st.image("logo.png", width=400)
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -40,7 +40,6 @@ value_added_options = [
     "英文拼音", "高效寫字", "聆聽訓練", "說話訓練", "思維閱讀", "創意理解", "作文教學"
 ]
 
-# Functions
 def generate_schedule(total_lessons, frequency_days, start_date):
     frequency_indices = sorted([weekday_map[day] for day in frequency_days])
     lessons = []
@@ -59,7 +58,6 @@ def generate_schedule(total_lessons, frequency_days, start_date):
                     if len(lessons) == total_lessons:
                         break
         current_date += timedelta(days=7)
-
     return lessons, skipped_holidays
 
 def calculate_week_range(total_lessons, frequency_per_week, lesson_dates):
@@ -67,7 +65,6 @@ def calculate_week_range(total_lessons, frequency_per_week, lesson_dates):
         return 10
     if total_lessons == 30:
         return 30
-
     key_freq = frequency_per_week if frequency_per_week < 3 else 3
     week_range_map = {
         1: {4: 5, 12: 15, 24: 30},
@@ -76,82 +73,7 @@ def calculate_week_range(total_lessons, frequency_per_week, lesson_dates):
     }
     week_range = week_range_map.get(key_freq, {}).get(total_lessons, 5)
     holiday_count = sum(1 for d in lesson_dates if d in holiday_dates)
-    week_range += holiday_count
-    return week_range
-
-def fill_template_doc(student_name, branch_name, invoice_number, amount, total_lessons,
-                      subjects, value_added_courses, start_date,
-                      lesson_dates, week_range, day_time_pairs, skipped_holidays):
-    doc = Document(template_path)
-
-    start_date_str = start_date.strftime('%d/%m/%Y')
-    end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
-    date_range_str = f"{start_date_str} 至 {end_date.strftime('%d/%m/%Y')}"
-
-    replacements = {
-        "單號:": f"單號: {invoice_number}",
-        "學生姓名：": f"學生姓名：{student_name}",
-        "堂數：": f"堂數：{total_lessons}",
-        "金額：": f"金額：${amount}",
-        "主科": f"主科：{' / '.join(subjects)}",
-        "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
-        "上課期數範圍": f"上課期數範圍：{date_range_str}",
-        "分校": branch_name
-    }
-
-    for para in doc.paragraphs:
-        for key, new_text in replacements.items():
-            if para.text.strip().startswith(key):
-                para.text = new_text
-
-    insert_index = None
-    for i, para in enumerate(doc.paragraphs):
-        if "上課日期" in para.text:
-            insert_index = i + 1
-            break
-
-    if insert_index is not None:
-        doc.paragraphs.insert(insert_index, doc.add_paragraph(""))
-        insert_index += 1
-
-        table = doc.add_table(rows=1, cols=3)
-        hdr_cells = table.rows[0].cells
-        hdr_cells[0].text = "堂數"
-        hdr_cells[1].text = "日期"
-        hdr_cells[2].text = "時間"
-
-        for cell in hdr_cells:
-            for paragraph in cell.paragraphs:
-                paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-        for i, date in enumerate(lesson_dates, 1):
-            row_cells = table.add_row().cells
-            row_cells[0].text = str(i)
-            row_cells[1].text = f"{date.strftime('%d/%m/%Y')} ({weekday_chinese[date.weekday()]})"
-            row_cells[2].text = day_time_pairs.get(weekday_chinese[date.weekday()], "")
-            for cell in row_cells:
-                for paragraph in cell.paragraphs:
-                    paragraph.alignment = WD_ALIGN_PARAGRAPH.CENTER
-
-        table.alignment = WD_TABLE_ALIGNMENT.CENTER
-        doc.paragraphs[insert_index - 1]._element.addnext(table._element)
-
-    # Insert skipped holidays if any
-    for para in doc.paragraphs:
-        if "公眾假期:" in para.text:
-            if skipped_holidays:
-                para.clear()
-                para.add_run("公眾假期:\n")
-                for d in skipped_holidays:
-                    para.add_run(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})\n")
-            else:
-                para.text = ""
-            break
-
-    file_stream = BytesIO()
-    doc.save(file_stream)
-    file_stream.seek(0)
-    return file_stream
+    return week_range + holiday_count
 
 # Streamlit UI
 st.title(":calendar: 課程收據單生成器")
@@ -173,7 +95,6 @@ for day in weekday_map.keys():
 
 subjects = st.multiselect("主科", subject_options)
 value_added_courses = st.multiselect("增值課程", value_added_options)
-
 start_date = st.date_input("開始日期", format="YYYY-MM-DD")
 
 if st.button("生成收據單"):
@@ -182,54 +103,55 @@ if st.button("生成收據單"):
         lesson_dates, skipped_holidays = generate_schedule(total_lessons, selected_days, start_date)
         week_range = calculate_week_range(total_lessons, len(selected_days), lesson_dates)
         end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
-        doc_file = fill_template_doc(student_name, branch_name, invoice_number, amount,
-                                     total_lessons, subjects, value_added_courses,
-                                     start_date, lesson_dates, week_range, day_time_pairs, skipped_holidays)
+
+        # Build text content for clipboard
+        bill_text_lines = [
+            f"分校：{branch_name}",
+            f"單號：{invoice_number}",
+            f"學生姓名：{student_name}",
+            f"堂數：{total_lessons}",
+            f"學費金額：${amount}",
+            f"主科：{' / '.join(subjects)}",
+            f"增值課程：{' / '.join(value_added_courses)}",
+            f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}",
+            "",
+            "📅 上課日期安排："
+        ]
+        for i, date in enumerate(lesson_dates, 1):
+            weekday_str = weekday_chinese[date.weekday()]
+            time_str = day_time_pairs.get(weekday_str, "")
+            bill_text_lines.append(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str}) {time_str}")
+
+        if skipped_holidays:
+            bill_text_lines.append("\n❌ 公眾假期 (休息):")
+            for d in skipped_holidays:
+                bill_text_lines.append(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
+        else:
+            bill_text_lines.append("\n✅ 無需休息的公眾假期。")
+
+        bill_text_lines.append("\n📌 所有課程必須於限期內完成，逾期作廢。")
+        bill_text = '\n'.join(bill_text_lines)
+
+        st.subheader("📋 複製以下文字：")
+        st.text_area(" ", value=bill_text, height=500, key="bill_text_area")
+
+        # Inject JS Copy button
+        copy_js = f"""
+        <script>
+        function copyToClipboard() {{
+            var text = document.getElementById("bill_text_area").value;
+            navigator.clipboard.writeText(text).then(function() {{
+                alert('已複製到剪貼簿！');
+            }}, function(err) {{
+                alert('複製失敗: ' + err);
+            }});
+        }}
+        </script>
+        <button onclick="copyToClipboard()" style="padding:8px 16px; background:#007bff; color:white; border:none; border-radius:4px;">📄 複製文字到剪貼簿</button>
+        """
+        st.markdown(copy_js, unsafe_allow_html=True)
 
         st.success("收據單已生成！")
-        st.download_button("下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
     else:
         st.error("請填妥所有必填欄位。")
 
-# Assemble full text block for easy copying
-bill_text_lines = [
-    f"分校：{branch_name}",
-    f"單號：{invoice_number}",
-    f"學生姓名：{student_name}",
-    f"堂數：{total_lessons}",
-    f"學費金額：${amount}",
-    f"主科：{' / '.join(subjects)}",
-    f"增值課程：{' / '.join(value_added_courses)}",
-    f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}",
-    "",
-    "📅 上課日期安排："
-]
-
-for i, date in enumerate(lesson_dates, 1):
-    weekday_str = weekday_chinese[date.weekday()]
-    time_str = day_time_pairs.get(weekday_str, "")
-    bill_text_lines.append(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str}) {time_str}")
-
-if skipped_holidays:
-    bill_text_lines.append("\n❌ 公眾假期 (休息):")
-    for d in skipped_holidays:
-        bill_text_lines.append(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
-else:
-    bill_text_lines.append("\n✅ 無需休息的公眾假期。")
-
-# Append standard terms
-bill_text_lines.append("\n📌 所有課程（包括補堂）必須於限期內完成，逾期作廢，剩餘的課堂不會作任何退款")
-bill_text_lines.append("補堂：補堂時間一經確定，不可更改。缺席補堂將不會再安排補堂。")
-bill_text_lines.append("📣 家長須知 📣")
-bill_text_lines.append("1. 返學安排🎒：上課前須先上洗手間🚾，學生遲到或無故缺席不設補時或補課❌")
-bill_text_lines.append("2. 放學安排🎒：家長須準時接送子女放學 ⏰")
-bill_text_lines.append("3. 公眾假期 🗓：如上")
-bill_text_lines.append("4. 請假安排：\n- 事假：須上課3天前短訊通知，方可安排補堂，補堂須於課程結束日前完成\n- 不足3天或即日通知，不設補堂❌\n- 病假😷：須後補醫生證明📝，方可安排補堂，補堂須於課程結束日前完成")
-bill_text_lines.append("5. 惡劣天氣安排：天文台於上課前兩小時發出惡劣天氣警告，本中心安排如下：\n- 黃色、紅色暴雨、三號風球✅照常上課✅（家長可決定子女是否上課，2小時前短訊請假可安排補堂）")
-
-# Combine lines into one text block
-bill_text = '\n'.join(bill_text_lines)
-
-# Display copyable text area
-st.subheader("📋 複製以下文字：")
-st.text_area(" ", value=bill_text, height=500)
