@@ -127,13 +127,10 @@ if st.button("生成收據單"):
             for d in skipped_holidays:
                 bill_text_lines.append(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
         else:
-            bill_text_lines.append("
-✅ 無需休息的公眾假期。")
+            bill_text_lines.append("✅ 無需休息的公眾假期。")
 
-        bill_text_lines.append("
-📌 所有課程必須於限期內完成，逾期作廢。")
-        bill_text = '
-'.join(bill_text_lines)
+        bill_text_lines.append("📌 所有課程必須於限期內完成，逾期作廢。")
+        bill_text = ''.join(bill_text_lines)
 
         st.subheader("📋 複製以下文字：")
         st.code(bill_text, language="text")
@@ -202,8 +199,7 @@ if st.button("生成收據單"):
                         skipped_lines = ["公眾假期 (休息):"] + [
                             f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
                         ]
-                        para.text = '
-'.join(skipped_lines)
+                        para.text = ''.join(skipped_lines)
                     else:
                         para.text = ""
                     break
