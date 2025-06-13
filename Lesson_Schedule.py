@@ -186,7 +186,7 @@ if st.button("生成收據單"):
                                      start_date, lesson_dates, week_range, day_time_pairs, skipped_holidays)
 
         st.success("收據單已生成！")
-        st.download_button("\ud83d\udcc5 下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
+        st.download_button("下載 Word 文件", data=doc_file, file_name="課程收據單.docx")
     else:
         st.error("請填妥所有必填欄位。")
 
