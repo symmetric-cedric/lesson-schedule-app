@@ -123,8 +123,7 @@ if st.button("生成收據單"):
             bill_text_lines.append(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str}) {time_str}")
 
         if skipped_holidays:
-            bill_text_lines.append("
-❌ 公眾假期 (休息):")
+            bill_text_lines.append("❌ 公眾假期 (休息):")
             for d in skipped_holidays:
                 bill_text_lines.append(f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})")
         else:
