@@ -7,7 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
 # Display Logo
-#st.image("logo.png", width=200)
+st.image("logo.png", width=200)
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -197,6 +197,7 @@ if st.button("生成收據單"):
         f"增值課程：{' / '.join(value_added_courses)}",
         f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}",
         "所有課程（包括補堂）必須於限期内完成，逾期作廢，剩餘的課堂不會作任何退款"]
+    bill_text_lines.append("")
     bill_text_lines.append("上課時間：")
     for day in selected_days:
         bill_text_lines.append(f"{day} {day_time_pairs[day]}")
