@@ -196,19 +196,19 @@ if st.button("生成收據單"):
         f"主科：{' / '.join(subjects)}",
         f"增值課程：{' / '.join(value_added_courses)}",
         f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}",
-        "所有課程（包括補堂）必須於限期内完成，逾期作廢，剩餘的課堂不會作任何退款",
-        "",
-        "📅 上課日期安排："
-    ]
+        "所有課程（包括補堂）必須於限期内完成，逾期作廢，剩餘的課堂不會作任何退款"]
+    bill_text_lines.append("上課時間：")
+    for day in selected_days:
+        bill_text_lines.append(f"{day} {day_time_pairs[day]}")
+    bill_text_lines.append("")
+    bill_text_lines.append("📅 上課日期安排：")
     for i, date in enumerate(lesson_dates, 1):
         weekday_str = weekday_chinese[date.weekday()]
         time_str = day_time_pairs.get(weekday_str, "")
         bill_text_lines.append(f"{i}. {date.strftime('%d/%m/%Y')} ({weekday_str})")
 
     bill_text_lines.append("")
-    bill_text_lines.append("上課時間：")
-    for day in selected_days:
-        bill_text_lines.append(f"{day} {day_time_pairs[day]}")
+    
     bill_text_lines.append("\n 補堂：\n 補堂時間一經確定，不可更改。缺席補堂將不會再安排補堂")
     bill_text_lines.append("\n ➿➿➿➿➿➿➿➿➿➿ \n 📣家長須知 📣")
     bill_text_lines.append("\n 1. 返學安排🎒 \n - 上課前，須先上洗手間🚾 \n - ⁠學生遲到或無故缺席均不設補時或補課❌")
