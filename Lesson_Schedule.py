@@ -41,23 +41,19 @@ value_added_options = [
 ]
 
 def generate_schedule(total_lessons, frequency_days, start_date):
-    frequency_indices = sorted([weekday_map[day] for day in frequency_days])
+    frequency_indices = set(weekday_map[day] for day in frequency_days)
     lessons = []
     skipped_holidays = []
     current_date = start_date
 
     while len(lessons) < total_lessons:
-        for weekday in frequency_indices:
-            days_ahead = (weekday - current_date.weekday() + 7) % 7
-            lesson_date = current_date + timedelta(days=days_ahead)
-            if lesson_date >= start_date:
-                if lesson_date in holiday_dates:
-                    skipped_holidays.append(lesson_date)
-                else:
-                    lessons.append(lesson_date)
-                    if len(lessons) == total_lessons:
-                        break
-        current_date += timedelta(days=7)
+        if current_date.weekday() in frequency_indices:
+            if current_date in holiday_dates:
+                skipped_holidays.append(current_date)
+            else:
+                lessons.append(current_date)
+        current_date += timedelta(days=1)
+
     return lessons, skipped_holidays
 
 def calculate_week_range(total_lessons, frequency_per_week, lesson_dates):
