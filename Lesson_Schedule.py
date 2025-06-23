@@ -6,7 +6,7 @@ from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
-# Display Logo
+# Display  Logo
 #st.image("logo.png", width=200)
 
 # Weekday and Holiday Setup
