@@ -190,8 +190,8 @@ def fill_template_doc(
         "上課期數範圍": f"上課期數範圍：{date_range_str}",
         "分校": branch_name,
         "上課時間：": f"上課時間：{day_time_str}",
-        "Bank_info": bank_info_map.get(branch_name),
-        "Quick_transfer": quick_transfer_map.get(branch_name)
+        "Bank_info": bank_info_map[branch_name],
+        "Quick_transfer": quick_transfer_map[branch_name]
     }
 
     for para in doc.paragraphs:
