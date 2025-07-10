@@ -168,7 +168,6 @@ def fill_template_doc(
         "單號:": f"單號: {invoice_number}",
         "學生姓名：": f"學生姓名：{student_name}",
         "堂數：": f"堂數：{total_lessons}",
-        "金額：": f"金額：${amount}",
         "主科": f"主科：{' / '.join(subjects)}",
         "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
         "上課期數範圍": f"上課期數範圍：{date_range_str}",
