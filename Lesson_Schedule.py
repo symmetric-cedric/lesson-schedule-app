@@ -43,9 +43,18 @@ value_added_options = [
     "思維閱讀", "創意理解", "作文教學"
 ]
 
+# Optional items configuration
+optional_items_map = {
+    "試堂日報讀贈券：即日報讀可獲舊生推薦現金券": -100,
+    "試堂日報讀贈券：即日報讀可扣減試堂費": -200,
+    "現金到校繳付24堂學費，送現金券": -50,
+    "現金到校繳付36堂學費，送現金券": -50,
+    "現金到校繳付48堂學費，送現金券": -100,
+    "現金到校繳付72堂學費，送現金券": -100,
+}
+
 # Function Definitions
-...
-# (Include generate_schedule, calculate_week_range, calculate_main_course_fee, calculate_value_added_fee, calculate_optional_items, fill_template_doc)
+# ... (generate_schedule, calculate_week_range, calculate_main_course_fee, calculate_value_added_fee, calculate_optional_items, fill_template_doc)
 
 # Streamlit UI
 st.title(":calendar: 課程收據單生成器")
@@ -68,122 +77,71 @@ for day in weekday_map:
 subjects = st.multiselect("主科", subject_options)
 value_added_courses = st.multiselect("增值課程", value_added_options)
 start_date = st.date_input("開始日期")
-optional_selections = st.multiselect("其他選項", list(
-    calculate_optional_items({}).__defaults__[0].keys()
-))
 
-# Optional items configuration
-optional_items_map = {
-    "試堂日報讀贈券：即日報讀可獲舊生推薦現金券": -100,
-    "試堂日報讀贈券：即日報讀可扣減試堂費": -200,
-    "現金到校繳付24堂學費，送現金券": -50,
-    "現金到校繳付36堂學費，送現金券": -50,
-    "現金到校繳付48堂學費，送現金券": -100,
-    "現金到校繳付72堂學費，送現金券": -100,
-}
+# Use the defined map for optional selections
+optional_selections = st.multiselect("其他選項", list(optional_items_map.keys()))
 
-# Function Definitions
+# Generate Receipt
+if st.button("生成收據單"):
+    # Validate
+    if not all([student_name, branch_name, invoice_number, subjects, day_time_pairs]):
+        st.error("請填妥所有必填欄位。")
+    else:
+        # Compute schedules and fees
+        lesson_dates, skipped_holidays = generate_schedule(
+            total_lessons, list(day_time_pairs.keys()), start_date
+        )
+        week_range = calculate_week_range(
+            total_lessons, len(day_time_pairs), lesson_dates
+        )
+        # Fees
+        main_fee, main_material = calculate_main_course_fee(len(day_time_pairs), total_lessons)
+        value_fee = calculate_value_added_fee(total_lessons)
+        # assume no separate materials for value-added or adjust as needed
+        value_material = 0
+        opt_fee, opt_details = calculate_optional_items(optional_selections)
+        total_amount = main_fee + main_material + value_fee + value_material + opt_fee
 
-def generate_schedule(total_lessons, frequency_days, start_date):
-    freq_idxs = set(weekday_map[d] for d in frequency_days)
-    lessons, skipped = [], []
-    date = start_date
-    while len(lessons) < total_lessons:
-        if date.weekday() in freq_idxs:
-            if date in holiday_dates:
-                skipped.append(date)
-            else:
-                lessons.append(date)
-        date += timedelta(days=1)
-    return lessons, skipped
+        # Fill and download document
+        doc_file = fill_template_doc(
+            student_name, branch_name, invoice_number,
+            main_fee, main_material,
+            value_fee, value_material,
+            opt_details,
+            start_date, lesson_dates, week_range,
+            day_time_pairs, skipped_holidays,
+            template_path
+        )
+        st.success("收據單已生成！")
+        st.download_button(
+            "下載 Word 文件", data=doc_file,
+            file_name="課程收據單.docx"
+        )
 
-
-def calculate_week_range(total_lessons, freq_per_week, lesson_dates):
-    if total_lessons in (10, 30):
-        return total_lessons
-    key = freq_per_week if freq_per_week < 3 else 3
-    m = {
-        1: {4:5,12:15,24:30},
-        2: {8:5,24:15,48:30},
-        3: {12:5,36:15,72:30}
-    }
-    base = m.get(key, {}).get(total_lessons, 5)
-    holidays = sum(1 for d in lesson_dates if d in holiday_dates)
-    return base + holidays
-
-
-def calculate_main_course_fee(lessons_per_week, total_lessons):
-    pricing = {
-        (1, 4): (1280, 50), (1,12): (3456,100), (1,24): (6144,150),
-        (2,8): (2400,100), (2,24):(5760,150),(2,48):(10080,300),
-        (3,12):(3360,100),(3,36):(7560,250),(3,72):(14112,400),
-        (None,10):(3500,100),(None,30):(9000,150)
-    }
-    return pricing.get((lessons_per_week, total_lessons)) or pricing.get((None,total_lessons),(0,0))
-
-
-def calculate_value_added_fee(total_lessons):
-    if total_lessons in (4,8): return 100 * total_lessons
-    if total_lessons == 12:     return 75 * total_lessons
-    if total_lessons == 24:     return 50 * total_lessons
-    return 0
-
-
-def calculate_optional_items(selected):
-    fee, details = 0, []
-    for opt in selected:
-        amt = None
-        if opt in optional_items_map:
-            amt = optional_items_map[opt]
-        elif "（＋$" in opt:
-            amt = int(opt.split("（＋$")[-1].replace("）",""))
-        if amt is not None:
-            fee += amt
-            details.append((opt, amt))
-    return fee, details
-
-
-def fill_template_doc(student_name, branch_name, invoice_number, main_tuition, main_material,
-                      value_tuition, value_material, optional_items, start_date,
-                      lesson_dates, week_range, day_time_pairs, skipped_holidays,
-                      template_path):
-    doc = Document(template_path)
-    # Replace header fields
-    reps = {
-        "單號:": f"單號: {invoice_number}",
-        "學生姓名：": f"學生姓名：{student_name}",
-        "分校": f"分校：{branch_name}"
-    }
-    for p in doc.paragraphs:
-        for k,v in reps.items():
-            if p.text.strip().startswith(k): p.text = v
-
-    # Insert fee calculation section
-    fee_idx = next((i for i,p in enumerate(doc.paragraphs) if p.text.strip().startswith("學費計算")), None)
-    if fee_idx is not None:
-        # Main and materials
-        doc.paragraphs[fee_idx].add_run("")
-        doc.insert_paragraph(fee_idx+1, f"主科：+${main_tuition}")
-        doc.insert_paragraph(fee_idx+2, f"小組活動教材：+${main_material}")
-        # Value-added
-        doc.insert_paragraph(fee_idx+3, f"增值課程學費：+${value_tuition}")
-        doc.insert_paragraph(fee_idx+4, f"增值課程教材：+${value_material}")
-        # Other
-        doc.insert_paragraph(fee_idx+5, "其他:")
-        for opt,amt in optional_items:
-            doc.insert_paragraph(fee_idx+6, f"{opt}：{'+' if amt>0 else ''}${amt}")
-        # Total
-        total = main_tuition+main_material+value_tuition+value_material+sum(a for _,a in optional_items)
-        doc.insert_paragraph(fee_idx+7, f"總額：= ${total}")
-
-    # ... rest of document population (schedule, etc.) ...
-    buf = BytesIO()
-    doc.save(buf)
-    buf.seek(0)
-    return buf
-
-# Streamlit UI remains: call calculate_main_course_fee to get 4 values and pass to fill function
-
+        # Clipboard Text
+        end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
+        lines = [
+            f"分校：{branch_name}",
+            f"單號：{invoice_number}",
+            f"學生姓名：{student_name}",
+            f"堂數：{total_lessons}",
+            f"學費金額：${total_amount}",
+            f"主科：{' / '.join(subjects)}",
+            f"增值課程：{' / '.join(value_added_courses)}",
+            f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}"
+        ]
+        lines += ["", "上課時間："] + [f"{day} {time}" for day, time in day_time_pairs.items()]
+        lines += ["", "📅 上課日期安排："] + [
+            f"{i}. {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})"
+            for i, d in enumerate(lesson_dates, 1)
+        ]
+        if skipped_holidays:
+            lines += ["", "❌ 公眾假期 (休息):"] + [
+                f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
+            ]
+        bill_text = '\n'.join(lines)
+        st.subheader("📋 複製以下文字：")
+        st.code(bill_text, language="text")
 
 
 
