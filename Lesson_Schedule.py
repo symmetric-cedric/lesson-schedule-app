@@ -164,6 +164,9 @@ def fill_template_doc(
     end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
     date_range_str = f"{start_date_str} 至 {end_date.strftime('%d/%m/%Y')}"
 
+    # Construct the 上課時間 string
+    day_time_str = ' / '.join(f"{day} {time}" for day, time in day_time_pairs.items())
+
     replacements = {
         "單號:": f"單號: {invoice_number}",
         "學生姓名：": f"學生姓名：{student_name}",
