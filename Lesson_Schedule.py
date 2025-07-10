@@ -168,11 +168,11 @@ def fill_template_doc(
     }
 
     quick_transfer_map = {
-        "淘大": "YCH EDUCATION LIMITED\nFPS: 1611 070 16",
-        "麗港城": "恆生銀行\nYCL EDUCATION LIMITED\n244 257 796 883",
+        "九龍灣(淘大)分校": "YCH EDUCATION LIMITED\nFPS: 1611 070 16",
+        "藍田(麗港城)分校": "恆生銀行\nYCL EDUCATION LIMITED\n244 257 796 883",
         "青衣(青怡)分校": "LCH EDUCATION LIMITED\nFPS: 1608 3 2457",
-        "港景峯": "MISS MAN EDUCATION LIMITED\nFPS: 103 779 914",
-        "鑽石山": "MISS MAN EDUCATION LIMITED\nFPS: 103 779 914"
+        "九龍站(港景峯)分校": "MISS MAN EDUCATION LIMITED\nFPS: 103 779 914",
+        "鑽石山(萬迪廣場)分校": "MISS MAN EDUCATION LIMITED\nFPS: 103 779 914"
     }
     
     # Replace placeholders
