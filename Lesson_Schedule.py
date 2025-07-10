@@ -142,8 +142,10 @@ def calculate_optional_items(selected):
     return fee, details
 
 
-def insert_paragraph_after(paragraph, text):
-    new_paragraph = paragraph.insert_paragraph_after(text)
+def insert_paragraph_after(paragraph, text, style=None):
+    new_p = OxmlElement("w:p")
+    paragraph._p.addnext(new_p)
+    new_paragraph = paragraph._parent.add_paragraph(text, style)
     return new_paragraph
 
 def fill_template_doc(
@@ -157,23 +159,20 @@ def fill_template_doc(
 ):
     doc = Document(template_path)
 
-    reps = {
-        "單號:": f"單號: {invoice_number}",
-        "學生姓名：": f"學生姓名：{student_name}",
-        "分校": f"分校：{branch_name}"
-    }
+    # Replace placeholders
     for p in doc.paragraphs:
-        for k, v in reps.items():
-            if p.text.strip().startswith(k):
-                p.text = v
+        if p.text.strip().startswith("單號:"):
+            p.text = f"單號: {invoice_number}"
+        elif p.text.strip().startswith("學生姓名："):
+            p.text = f"學生姓名：{student_name}"
+        elif p.text.strip().startswith("分校"):
+            p.text = f"分校：{branch_name}"
 
-    # Insert fee section after "學費計算"
-    def insert_paragraph_after(paragraph, text):
-        return paragraph.insert_paragraph_after(text)
-
-    fee_idx = next((i for i, p in enumerate(doc.paragraphs) if p.text.strip().startswith("學費計算")), None)
+    # Find "學費計算" to insert after
+    fee_idx = next((i for i, p in enumerate(doc.paragraphs) if "學費計算" in p.text), None)
     if fee_idx is not None:
         base_para = doc.paragraphs[fee_idx]
+
         insert_paragraph_after(base_para, f"主科：+${main_tuition}")
         insert_paragraph_after(base_para, f"小組活動教材：+${main_material}")
         insert_paragraph_after(base_para, f"增值課程學費：+${value_tuition}")
@@ -188,6 +187,7 @@ def fill_template_doc(
     doc.save(buf)
     buf.seek(0)
     return buf
+
 
 
 
