@@ -149,10 +149,22 @@ def insert_paragraph_after(paragraph, text, style=None):
     return new_paragraph
 
 def insert_after(paragraph, text):
-    new_p = OxmlElement("w:p")  # Create a new empty paragraph element
-    paragraph._element.addnext(new_p)  # Insert after current paragraph
-    new_para = Paragraph(new_p, paragraph._parent)  # Wrap as Paragraph
-    new_para.add_run(text)
+    # Get the XML element of the current paragraph
+    p = paragraph._element
+
+    # Create a new w:p element
+    new_p = OxmlElement("w:p")
+
+    # Insert the new paragraph after the current one
+    p.addnext(new_p)
+
+    # Wrap the new XML element in a Paragraph object using the document's parent
+    # This is done using the parent document's `Part` to access the correct context
+    new_para = Paragraph(new_p, paragraph._parent)
+
+    # Add text to the new paragraph
+    run = new_para.add_run(text)
+
     return new_para
 
 def fill_template_doc(
@@ -200,7 +212,6 @@ def fill_template_doc(
         current_para = insert_after(current_para, "其他:")
         for opt, amt in optional_items:
             current_para = insert_after(current_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
-        total = main_tuition + main_material + value_tuition + value_material + sum(a for _, a in optional_items)
         insert_after(current_para, f"總額：= ${total}")
 
     buf = BytesIO()
