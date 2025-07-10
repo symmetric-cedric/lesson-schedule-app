@@ -55,8 +55,6 @@ optional_items_map = {
     "現金到校繳付72堂學費，送現金券": -100,
 }
 
-# Function Definitions
-# ... (generate_schedule, calculate_week_range, calculate_main_course_fee, calculate_value_added_fee, calculate_optional_items, fill_template_doc)
 
 # Streamlit UI
 st.title(":calendar: 課程收據單生成器")
@@ -148,9 +146,17 @@ def insert_paragraph_after(paragraph, text):
     new_paragraph = paragraph.insert_paragraph_after(text)
     return new_paragraph
 
-def fill_template_doc(...):  # your existing params
+def fill_template_doc(
+    student_name, branch_name, invoice_number,
+    main_tuition, main_material,
+    value_tuition, value_material,
+    optional_items,
+    start_date, lesson_dates, week_range,
+    day_time_pairs, skipped_holidays,
+    template_path
+):
     doc = Document(template_path)
-    
+
     reps = {
         "單號:": f"單號: {invoice_number}",
         "學生姓名：": f"學生姓名：{student_name}",
@@ -160,6 +166,10 @@ def fill_template_doc(...):  # your existing params
         for k, v in reps.items():
             if p.text.strip().startswith(k):
                 p.text = v
+
+    # Insert fee section after "學費計算"
+    def insert_paragraph_after(paragraph, text):
+        return paragraph.insert_paragraph_after(text)
 
     fee_idx = next((i for i, p in enumerate(doc.paragraphs) if p.text.strip().startswith("學費計算")), None)
     if fee_idx is not None:
