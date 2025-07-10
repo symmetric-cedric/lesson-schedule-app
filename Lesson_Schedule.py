@@ -7,7 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 
 # Display Logo (uncomment and set path if needed)
-#st.image("logo.png", width=200)
+# st.image("logo.png", width=200)
 
 # Weekday and Holiday Setup
 weekday_map = {
@@ -42,6 +42,35 @@ value_added_options = [
     "英文拼音", "高效寫字", "聆聽訓練", "說話訓練",
     "思維閱讀", "創意理解", "作文教學"
 ]
+
+# Function Definitions
+...
+# (Include generate_schedule, calculate_week_range, calculate_main_course_fee, calculate_value_added_fee, calculate_optional_items, fill_template_doc)
+
+# Streamlit UI
+st.title(":calendar: 課程收據單生成器")
+
+# User Inputs
+student_name = st.text_input("學生姓名")
+branch_name = st.selectbox("分校名稱", [
+    "九龍灣(淘大)分校", "藍田(麗港城)分校", "青衣(青怡)分校",
+    "九龍站(港景峯)分校", "鑽石山(萬迪廣場)分校"
+])
+invoice_number = st.text_input("單號")
+total_lessons = st.selectbox("堂數", [4, 8, 10, 12, 24, 30, 36, 48, 72])
+
+st.subheader("上課日及時間")
+day_time_pairs = {}
+for day in weekday_map:
+    if st.checkbox(day):
+        day_time_pairs[day] = st.selectbox(f"{day} 上課時間", lesson_time_options, key=day)
+
+subjects = st.multiselect("主科", subject_options)
+value_added_courses = st.multiselect("增值課程", value_added_options)
+start_date = st.date_input("開始日期")
+optional_selections = st.multiselect("其他選項", list(
+    calculate_optional_items({}).__defaults__[0].keys()
+))
 
 # Optional items configuration
 optional_items_map = {
