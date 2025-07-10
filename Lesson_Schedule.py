@@ -251,7 +251,9 @@ if st.button("生成收據單"):
                 f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
             ]
         
-        bill_text_lines.append("")
+        bill_text = '\n'.join(lines)
+
+        bill_text.append("")
     
         bill_text.append("\n 補堂：\n 補堂時間一經確定，不可更改。缺席補堂將不會再安排補堂")
         bill_text.append("\n ➿➿➿➿➿➿➿➿➿➿ \n 📣家長須知 📣")
@@ -271,10 +273,8 @@ if st.button("生成收據單"):
         bill_text.append("\n 5. 惡劣天氣安排： \n 天文台於上課前兩小時發出惡劣天氣警告信號，本中心將作出以下安排：")
         bill_text.append("\n - 黃色、紅色暴雨警告 \n - ⁠三號颱風訊號")
         bill_text.append("\n ✅本中心會照常上課✅（家長可自行決定子女會否上課，上課前2小時以短訊通知請假，可安排補堂）")
-    
-        bill_text = '\n'.join(bill_text_lines)
+
         
-        bill_text = '\n'.join(lines)
         st.subheader("📋 複製以下文字：")
         st.code(bill_text, language="text")
 
