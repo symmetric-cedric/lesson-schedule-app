@@ -160,13 +160,25 @@ def fill_template_doc(
     doc = Document(template_path)
 
     # Replace placeholders
-    for p in doc.paragraphs:
-        if p.text.strip().startswith("單號:"):
-            p.text = f"單號: {invoice_number}"
-        elif p.text.strip().startswith("學生姓名："):
-            p.text = f"學生姓名：{student_name}"
-        elif p.text.strip().startswith("分校"):
-            p.text = f"分校：{branch_name}"
+    start_date_str = start_date.strftime('%d/%m/%Y')
+    end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
+    date_range_str = f"{start_date_str} 至 {end_date.strftime('%d/%m/%Y')}"
+
+    replacements = {
+        "單號:": f"單號: {invoice_number}",
+        "學生姓名：": f"學生姓名：{student_name}",
+        "堂數：": f"堂數：{total_lessons}",
+        "金額：": f"金額：${amount}",
+        "主科": f"主科：{' / '.join(subjects)}",
+        "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
+        "上課期數範圍": f"上課期數範圍：{date_range_str}",
+        "分校": branch_name
+    }
+
+    for para in doc.paragraphs:
+        for key, new_text in replacements.items():
+            if para.text.strip().startswith(key):
+                para.text = new_text
 
     # Find "學費計算" to insert after
     fee_idx = next((i for i, p in enumerate(doc.paragraphs) if "學費計算" in p.text), None)
@@ -237,7 +249,6 @@ if st.button("生成收據單"):
             f"單號：{invoice_number}",
             f"學生姓名：{student_name}",
             f"堂數：{total_lessons}",
-            f"學費金額：${total_amount}",
             f"主科：{' / '.join(subjects)}",
             f"增值課程：{' / '.join(value_added_courses)}",
             f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}",
