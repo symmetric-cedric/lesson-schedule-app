@@ -149,8 +149,9 @@ def insert_paragraph_after(paragraph, text, style=None):
     return new_paragraph
 
 def insert_after(paragraph, text):
-    new_p = paragraph._element.addnext(OxmlElement("w:p"))
-    new_para = Paragraph(new_p, paragraph._parent)
+    new_p = OxmlElement("w:p")  # Create a new empty paragraph element
+    paragraph._element.addnext(new_p)  # Insert after current paragraph
+    new_para = Paragraph(new_p, paragraph._parent)  # Wrap as Paragraph
     new_para.add_run(text)
     return new_para
 
@@ -191,7 +192,7 @@ def fill_template_doc(
     fee_idx = next((i for i, p in enumerate(doc.paragraphs) if "學費計算" in p.text), None)
     if fee_idx is not None:
         current_para = doc.paragraphs[fee_idx]
-
+    
         current_para = insert_after(current_para, f"主科：+${main_tuition}")
         current_para = insert_after(current_para, f"小組活動教材：+${main_material}")
         current_para = insert_after(current_para, f"增值課程學費：+${value_tuition}")
