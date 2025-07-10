@@ -148,25 +148,6 @@ def insert_paragraph_after(paragraph, text, style=None):
     new_paragraph = paragraph._parent.add_paragraph(text, style)
     return new_paragraph
 
-def insert_after(paragraph, text):
-    # Get the XML element of the current paragraph
-    p = paragraph._element
-
-    # Create a new w:p element
-    new_p = OxmlElement("w:p")
-
-    # Insert the new paragraph after the current one
-    p.addnext(new_p)
-
-    # Wrap the new XML element in a Paragraph object using the document's parent
-    # This is done using the parent document's `Part` to access the correct context
-    new_para = Paragraph(new_p, paragraph._parent)
-
-    # Add text to the new paragraph
-    run = new_para.add_run(text)
-
-    return new_para
-
 def fill_template_doc(
     student_name, branch_name, invoice_number,
     main_tuition, main_material,
@@ -202,17 +183,18 @@ def fill_template_doc(
 
     # Find "學費計算" to insert after
     fee_idx = next((i for i, p in enumerate(doc.paragraphs) if "學費計算" in p.text), None)
-    if fee_idx is not None:
-        current_para = doc.paragraphs[fee_idx]
+        if fee_idx is not None:
+            base_para = doc.paragraphs[fee_idx]
     
-        current_para = insert_after(current_para, f"主科：+${main_tuition}")
-        current_para = insert_after(current_para, f"小組活動教材：+${main_material}")
-        current_para = insert_after(current_para, f"增值課程學費：+${value_tuition}")
-        current_para = insert_after(current_para, f"增值課程教材：+${value_material}")
-        current_para = insert_after(current_para, "其他:")
-        for opt, amt in optional_items:
-            current_para = insert_after(current_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
-        insert_after(current_para, f"總額：= ${total}")
+            insert_paragraph_after(base_para, f"主科：+${main_tuition}")
+            insert_paragraph_after(base_para, f"小組活動教材：+${main_material}")
+            insert_paragraph_after(base_para, f"增值課程學費：+${value_tuition}")
+            insert_paragraph_after(base_para, f"增值課程教材：+${value_material}")
+            insert_paragraph_after(base_para, "其他:")
+            for opt, amt in optional_items:
+                insert_paragraph_after(base_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
+            total = main_tuition + main_material + value_tuition + value_material + sum(a for _, a in optional_items)
+            insert_paragraph_after(base_para, f"總額：= ${total}")
 
     buf = BytesIO()
     doc.save(buf)
