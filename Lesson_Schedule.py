@@ -253,7 +253,7 @@ if st.button("生成收據單"):
         
         bill_text = '\n'.join(lines)
 
-        bill_text.append("")
+        bill_text.append(" ")
     
         bill_text.append("\n 補堂：\n 補堂時間一經確定，不可更改。缺席補堂將不會再安排補堂")
         bill_text.append("\n ➿➿➿➿➿➿➿➿➿➿ \n 📣家長須知 📣")
