@@ -183,18 +183,18 @@ def fill_template_doc(
 
     # Find "學費計算" to insert after
     fee_idx = next((i for i, p in enumerate(doc.paragraphs) if "學費計算" in p.text), None)
-        if fee_idx is not None:
-            base_para = doc.paragraphs[fee_idx]
-    
-            insert_paragraph_after(base_para, f"主科：+${main_tuition}")
-            insert_paragraph_after(base_para, f"小組活動教材：+${main_material}")
-            insert_paragraph_after(base_para, f"增值課程學費：+${value_tuition}")
-            insert_paragraph_after(base_para, f"增值課程教材：+${value_material}")
-            insert_paragraph_after(base_para, "其他:")
-            for opt, amt in optional_items:
-                insert_paragraph_after(base_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
-            total = main_tuition + main_material + value_tuition + value_material + sum(a for _, a in optional_items)
-            insert_paragraph_after(base_para, f"總額：= ${total}")
+    if fee_idx is not None:
+        base_para = doc.paragraphs[fee_idx]
+
+        insert_paragraph_after(base_para, f"主科：+${main_tuition}")
+        insert_paragraph_after(base_para, f"小組活動教材：+${main_material}")
+        insert_paragraph_after(base_para, f"增值課程學費：+${value_tuition}")
+        insert_paragraph_after(base_para, f"增值課程教材：+${value_material}")
+        insert_paragraph_after(base_para, "其他:")
+        for opt, amt in optional_items:
+            insert_paragraph_after(base_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
+        total = main_tuition + main_material + value_tuition + value_material + sum(a for _, a in optional_items)
+        insert_paragraph_after(base_para, f"總額：= ${total}")
 
     buf = BytesIO()
     doc.save(buf)
