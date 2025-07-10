@@ -5,6 +5,8 @@ from docx.shared import Pt
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
+from docx.oxml import OxmlElement
+from docx.oxml.ns import qn
 
 # Display Logo (uncomment and set path if needed)
 # st.image("logo.png", width=200)
@@ -142,40 +144,36 @@ def calculate_optional_items(selected):
     return fee, details
 
 
-def fill_template_doc(student_name, branch_name, invoice_number, main_tuition, main_material,
-                      value_tuition, value_material, optional_items, start_date,
-                      lesson_dates, week_range, day_time_pairs, skipped_holidays,
-                      template_path):
+def insert_paragraph_after(paragraph, text):
+    new_paragraph = paragraph.insert_paragraph_after(text)
+    return new_paragraph
+
+def fill_template_doc(...):  # your existing params
     doc = Document(template_path)
-    # Replace header fields
+    
     reps = {
         "單號:": f"單號: {invoice_number}",
         "學生姓名：": f"學生姓名：{student_name}",
         "分校": f"分校：{branch_name}"
     }
     for p in doc.paragraphs:
-        for k,v in reps.items():
-            if p.text.strip().startswith(k): p.text = v
+        for k, v in reps.items():
+            if p.text.strip().startswith(k):
+                p.text = v
 
-    # Insert fee calculation section
-    fee_idx = next((i for i,p in enumerate(doc.paragraphs) if p.text.strip().startswith("學費計算")), None)
+    fee_idx = next((i for i, p in enumerate(doc.paragraphs) if p.text.strip().startswith("學費計算")), None)
     if fee_idx is not None:
-        # Main and materials
-        doc.paragraphs[fee_idx].add_run("")
-        doc.insert_paragraph(fee_idx+1, f"主科：+${main_tuition}")
-        doc.insert_paragraph(fee_idx+2, f"小組活動教材：+${main_material}")
-        # Value-added
-        doc.insert_paragraph(fee_idx+3, f"增值課程學費：+${value_tuition}")
-        doc.insert_paragraph(fee_idx+4, f"增值課程教材：+${value_material}")
-        # Other
-        doc.insert_paragraph(fee_idx+5, "其他:")
-        for opt,amt in optional_items:
-            doc.insert_paragraph(fee_idx+6, f"{opt}：{'+' if amt>0 else ''}${amt}")
-        # Total
-        total = main_tuition+main_material+value_tuition+value_material+sum(a for _,a in optional_items)
-        doc.insert_paragraph(fee_idx+7, f"總額：= ${total}")
+        base_para = doc.paragraphs[fee_idx]
+        insert_paragraph_after(base_para, f"主科：+${main_tuition}")
+        insert_paragraph_after(base_para, f"小組活動教材：+${main_material}")
+        insert_paragraph_after(base_para, f"增值課程學費：+${value_tuition}")
+        insert_paragraph_after(base_para, f"增值課程教材：+${value_material}")
+        insert_paragraph_after(base_para, "其他:")
+        for opt, amt in optional_items:
+            insert_paragraph_after(base_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
+        total = main_tuition + main_material + value_tuition + value_material + sum(a for _, a in optional_items)
+        insert_paragraph_after(base_para, f"總額：= ${total}")
 
-    # ... rest of document population (schedule, etc.) ...
     buf = BytesIO()
     doc.save(buf)
     buf.seek(0)
