@@ -7,6 +7,7 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from io import BytesIO
 from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
+from docx.text.paragraph import Paragraph
 
 # Display Logo (uncomment and set path if needed)
 # st.image("logo.png", width=200)
@@ -143,10 +144,18 @@ def calculate_optional_items(selected):
 
 
 def insert_paragraph_after(paragraph, text):
-    new_p = OxmlElement("w:p")
-    paragraph._p.addnext(new_p)
-    new_para = paragraph._parent.add_paragraph(text)
-    return new_para
+    new_p = OxmlElement("w:p")  # Create a new paragraph element
+    paragraph._p.addnext(new_p)  # Insert after the current paragraph
+
+    # Add a run (text span) to the new paragraph
+    new_r = OxmlElement("w:r")
+    new_t = OxmlElement("w:t")
+    new_t.text = text
+    new_r.append(new_t)
+    new_p.append(new_r)
+
+    # Wrap it in a Paragraph object so you can keep chaining if needed
+    return Paragraph(new_p, paragraph._parent)
 
 def fill_template_doc(
     student_name, branch_name, invoice_number,
