@@ -168,10 +168,9 @@ def fill_template_doc(
         "單號:": f"單號: {invoice_number}",
         "學生姓名：": f"學生姓名：{student_name}",
         "堂數：": f"堂數：{total_lessons}",
-        "主科": f"主科：{' / '.join(subjects)}",
-        "增值課程": f"增值課程：{' / '.join(value_added_courses)}",
         "上課期數範圍": f"上課期數範圍：{date_range_str}",
-        "分校": branch_name
+        "分校": branch_name,
+        "上課時間": f"上課時間：{day} {time}" for day, time in day_time_pairs.items()
     }
 
     for para in doc.paragraphs:
@@ -184,15 +183,21 @@ def fill_template_doc(
     if fee_idx is not None:
         base_para = doc.paragraphs[fee_idx]
 
-        insert_paragraph_after(base_para, f"主科：+${main_tuition}")
-        insert_paragraph_after(base_para, f"小組活動教材：+${main_material}")
-        insert_paragraph_after(base_para, f"增值課程學費：+${value_tuition}")
-        insert_paragraph_after(base_para, f"增值課程教材：+${value_material}")
-        insert_paragraph_after(base_para, "其他:")
-        for opt, amt in optional_items:
-            insert_paragraph_after(base_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
-        total = main_tuition + main_material + value_tuition + value_material + sum(a for _, a in optional_items)
-        insert_paragraph_after(base_para, f"總額：= ${total}")
+        current_para = base_para  # track where to insert next
+
+        def insert_after(p, text):
+            new_para = p.insert_paragraph_after(text)
+            return new_para  # return to chain the next insert
+
+    current_para = insert_after(current_para, f"主科：+${main_tuition}")
+    current_para = insert_after(current_para, f"小組活動教材：+${main_material}")
+    current_para = insert_after(current_para, f"增值課程學費：+${value_tuition}")
+    current_para = insert_after(current_para, f"增值課程教材：+${value_material}")
+    current_para = insert_after(current_para, "其他:")
+    for opt, amt in optional_items:
+        current_para = insert_after(current_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
+    total = main_tuition + main_material + value_tuition + value_material + sum(a for _, a in optional_items)
+    current_para = insert_after(current_para, f"總額：= ${total}")
 
     buf = BytesIO()
     doc.save(buf)
