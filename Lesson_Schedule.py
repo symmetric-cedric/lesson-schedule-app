@@ -195,7 +195,7 @@ def fill_template_doc(
     replacements = {
         "單號:": f"單號: {invoice_number}",
         "學生姓名：": f"學生姓名：{student_name}",
-        "堂數：": f"堂數：{total_lessons}",
+        "堂數": f"堂數：{total_lessons}",
         "上課期數範圍": f"上課期數範圍：{date_range_str}",
         "分校": branch_name,
         "上課時間：": f"上課時間：{day_time_str}",
