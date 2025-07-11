@@ -290,26 +290,27 @@ def fill_template_doc(
         current_para = insert_paragraph_after(current_para, f"小組活動教材：+${main_material}")
         current_para = insert_paragraph_after(current_para, f"增值課程（{value_added_courses_str}）：+${value_tuition}")
 
-        material_total = 0
+        # 增值課程教材 breakdown
+        value_material_total = 0
         if value_material_selections:
             current_para = insert_paragraph_after(current_para, "增值課程教材：")
             for course, lesson_count in value_material_selections.items():
                 try:
                     price = value_material[course][lesson_count]
-                    current_para = insert_paragraph_after(current_para, f"{course}（{lesson_count}）: +${price}")
-                    material_total += price
+                    current_para = insert_paragraph_after(current_para, f"{course}（{lesson_count}）：+${price}")
+                    value_material_total += price
                 except KeyError:
-                    pass
+                    current_para = insert_paragraph_after(current_para, f"{course}（{lesson_count}）：資料錯誤，請檢查設定")
         
-        current_para = insert_paragraph_after(current_para, f"增值課程教材：+${value_material}")
+        # 其他項目
         current_para = insert_paragraph_after(current_para, "其他:")
         for opt, amt in optional_items:
             current_para = insert_paragraph_after(current_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
-
-
-        value_material_total = sum(value_material[course][lesson] for course, lesson in value_material_selections.items() if course in value_material and lesson in value_material[course])
+        
+        # 計算總額
         total_amount = main_fee + main_material + value_fee + value_material_total + opt_fee
         insert_paragraph_after(current_para, f"總額：= ${total_amount}")
+
 
     buf = BytesIO()
     doc.save(buf)
