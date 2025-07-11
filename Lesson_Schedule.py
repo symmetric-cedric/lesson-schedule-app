@@ -309,7 +309,7 @@ def fill_template_doc(
 
         value_material_total = sum(value_material[course][lesson] for course, lesson in value_material_selections.items() if course in value_material and lesson in value_material[course])
         total_amount = main_fee + main_material + value_fee + value_material_total + opt_fee
-        insert_paragraph_after(current_para, f"總額：= ${total}")
+        insert_paragraph_after(current_para, f"總額：= ${total_amount}")
 
     buf = BytesIO()
     doc.save(buf)
@@ -340,6 +340,11 @@ if st.button("生成收據單"):
         opt_fee, opt_details = calculate_optional_items(optional_selections)
 
 
+
+
+
+
+        
         # Fill and download document
         doc_file = fill_template_doc(
             student_name, branch_name, invoice_number,
@@ -356,6 +361,17 @@ if st.button("生成收據單"):
             file_name="課程收據單.docx"
         )
 
+
+
+
+
+
+
+
+
+
+
+        
         # Clipboard Text
         end_date = start_date + timedelta(weeks=week_range) - timedelta(days=1)
 
