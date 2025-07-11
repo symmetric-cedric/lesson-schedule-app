@@ -47,6 +47,65 @@ value_added_options = [
 ]
 
 # Optional items configuration
+
+value_material = {
+    "英文拼音課本": {
+        "單本": 50
+    },
+    "高效寫字課本": {
+        "單本": 50
+    },
+    "創意理解課本": {
+        "單本": 50
+    },
+    "創意理解・語文工作紙": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+    "聆聽訓練教材": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+    "說話訓練教材": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+    "思維閱讀教材": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+    "作文教學工作紙": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+}
+
+
 optional_items_map = {
     "試堂日報讀贈券：即日報讀可獲舊生推薦現金券": -100,
     "試堂日報讀贈券：即日報讀可扣減試堂費": -200,
@@ -78,6 +137,16 @@ for day in weekday_map:
 subjects = st.multiselect("主科", subject_options)
 value_added_courses = st.multiselect("增值課程", value_added_options)
 start_date = st.date_input("開始日期")
+
+
+# UI: value-added materials selection with lesson count
+value_material_selections = {}
+for course in value_material:
+    if st.checkbox(course):
+        lesson_option = st.selectbox(
+            f"{course} - 選擇堂數", list(value_material[course].keys()), key=course
+        )
+        value_material_selections[course] = lesson_option
 
 # Use the defined map for optional selections
 optional_selections = st.multiselect("其他選項", list(optional_items_map.keys()))
@@ -165,7 +234,7 @@ def fill_template_doc(
     start_date, lesson_dates, week_range,
     day_time_pairs, skipped_holidays,
     template_path,
-    subjects, value_added_courses
+    subjects, value_added_courses,value_material_selections
 ):
     doc = Document(template_path)
     
@@ -220,11 +289,29 @@ def fill_template_doc(
         current_para = insert_paragraph_after(base_para, f"主科（{main_subjects_str}）：+${main_tuition}")
         current_para = insert_paragraph_after(current_para, f"小組活動教材：+${main_material}")
         current_para = insert_paragraph_after(current_para, f"增值課程（{value_added_courses_str}）：+${value_tuition}")
+
+        material_total = 0
+        if value_material_selections:
+            current_para = insert_paragraph_after(current_para, "增值課程教材：")
+            for course, lesson_count in value_material_selections.items():
+                try:
+                    price = value_material[course][lesson_count]
+                    current_para = insert_paragraph_after(current_para, f"{course}（{lesson_count}）: +${price}")
+                    material_total += price
+                except KeyError:
+                    pass
+        
         current_para = insert_paragraph_after(current_para, f"增值課程教材：+${value_material}")
         current_para = insert_paragraph_after(current_para, "其他:")
         for opt, amt in optional_items:
             current_para = insert_paragraph_after(current_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
-        total = main_tuition + main_material + value_tuition + value_material + sum(a for _, a in optional_items)
+        total = (
+            main_tuition +
+            main_material +
+            value_tuition +
+            material_total +
+            sum(amt for _, amt in optional_items)
+        )
         insert_paragraph_after(current_para, f"總額：= ${total}")
 
     buf = BytesIO()
@@ -253,7 +340,6 @@ if st.button("生成收據單"):
         main_fee, main_material = calculate_main_course_fee(len(day_time_pairs), total_lessons)
         value_fee = calculate_value_added_fee(total_lessons)
         # assume no separate materials for value-added or adjust as needed
-        value_material = 0
         opt_fee, opt_details = calculate_optional_items(optional_selections)
         total_amount = main_fee + main_material + value_fee + value_material + opt_fee
 
@@ -265,7 +351,7 @@ if st.button("生成收據單"):
             opt_details,
             start_date, lesson_dates, week_range,
             day_time_pairs, skipped_holidays,
-            template_path, subjects, value_added_courses
+            template_path, subjects, value_added_courses,value_material_selections
         )
         st.success("收據單已生成！")
         st.download_button(
