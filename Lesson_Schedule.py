@@ -101,20 +101,13 @@ def fill_template_doc(
     doc = Document(template_path)
     
     bank_info_map = {
-    "九龍灣(淘大)分校": "恆生銀行\nYCH EDUCATION LIMITED\n369 439 963 883",
-    "藍田(麗港城)分校": "恆生銀行\nYCL EDUCATION LIMITED\n244 257 796 883",
-    "青衣(青怡)分校": "匯豐銀行\nLCH EDUCATION LIMITED\n049 656 150 838",
-    "九龍站(港景峯)分校": "恆生銀行\nMISS MAN EDUCATION LIMITED\n244 333 787 883",
-    "鑽石山(萬迪廣場)分校": "恆生銀行\nMISS MAN EDUCATION LIMITED\n244 333 787 883"
+    "九龍灣(淘大)分校": "恆生銀行\n賬戶名稱：YCH EDUCATION LIMITED\n賬戶號碼：369 439 963 883\n快速支付編號 : 161107016",
+    "藍田(麗港城)分校": "恆生銀行\n賬戶名稱：YCL EDUCATION LIMITED\n賬戶號碼：244 257 796 883\n快速支付編號 : 1612 8090",
+    "青衣(青怡)分校": "匯豐銀行\n賬戶名稱：LCH EDUCATION LIMITED\n賬戶號碼：049 656 150 838\n快速支付編號 : 1608 3 2457",
+    "九龍站(港景峯)分校": "恆生銀行\n賬戶名稱：MISS MAN EDUCATION LIMITED\n賬戶號碼：244 333 787 883\n快速支付編號 : 103 779 914",
+    "鑽石山(萬迪廣場)分校": "恆生銀行\n賬戶名稱：MISS MAN EDUCATION LIMITED\n賬戶號碼：244 333 787 883\n快速支付編號 : 103 779 914"
     }
 
-    quick_transfer_map = {
-        "九龍灣(淘大)分校": "YCH EDUCATION LIMITED\nFPS: 1611 070 16",
-        "藍田(麗港城)分校": "恆生銀行\nYCL EDUCATION LIMITED\n244 257 796 883",
-        "青衣(青怡)分校": "LCH EDUCATION LIMITED\nFPS: 1608 3 2457",
-        "九龍站(港景峯)分校": "MISS MAN EDUCATION LIMITED\nFPS: 103 779 914",
-        "鑽石山(萬迪廣場)分校": "MISS MAN EDUCATION LIMITED\nFPS: 103 779 914"
-    }
     main_subjects_str = '、'.join(subjects)
     value_added_courses_str = '、'.join(value_added_courses)
 
@@ -135,7 +128,6 @@ def fill_template_doc(
         "分校": branch_name,
         "上課時間：": f"上課時間：{day_time_str}",
         "Bank_info": bank_info_map[branch_name],
-        "Quick_transfer": quick_transfer_map[branch_name]
     }
 
     for para in doc.paragraphs:
@@ -171,7 +163,7 @@ def fill_template_doc(
         
         # 計算總額
         total_amount = main_fee + main_material + value_fee + value_material_total + opt_fee
-        insert_paragraph_after(current_para, f"總額：= ${total_amount}")
+        insert_paragraph_after(current_para, f"總額：= ${total_amount} (銀行轉賬) / ${total_amount-50}(現金到校繳付)")
 
 
     buf = BytesIO()
@@ -286,6 +278,7 @@ optional_items_map = {
     "現金到校繳付36堂學費，送現金券": -50,
     "現金到校繳付48堂學費，送現金券": -100,
     "現金到校繳付72堂學費，送現金券": -100,
+    "在學證明": -50
 }
 
 
