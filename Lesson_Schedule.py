@@ -312,7 +312,7 @@ preview_lesson_dates, _ = generate_schedule(
 show_cancel = st.checkbox("是否有取消上課日期？", value=False)
 st.markdown("---")
 st.markdown("<hr style='border: 1px solid #ccc;'>", unsafe_allow_html=True)
-st.markdown("### 🧾 收據資訊")
+st.markdown("### 🧾 學費資訊")
 
 cancel_holidays = []
 
