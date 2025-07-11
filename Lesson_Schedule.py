@@ -138,6 +138,17 @@ subjects = st.multiselect("主科", subject_options)
 value_added_courses = st.multiselect("增值課程", value_added_options)
 start_date = st.date_input("開始日期")
 
+show_cancel = st.checkbox("是否有取消上課日期？", value=False)
+cancel_holidays = []
+# If checkbox is ticked, show multiselect or date_input for selection
+if show_cancel:
+    cancel_holidays = st.multiselect(
+        "取消上課日期",
+        options=lesson_dates,
+        format_func=lambda d: d.strftime('%Y/%m/%d（%A）'),
+    )
+
+holiday_dates.update(cancel_holidays)
 
 # UI: value-added materials selection with lesson count
 value_material_selections = {}
@@ -384,6 +395,7 @@ if st.button("生成收據單"):
             f"主科：{' / '.join(subjects)}",
             f"增值課程：{' / '.join(value_added_courses)}",
             f"📆 上課期數範圍：{start_date.strftime('%d/%m/%Y')} 至 {end_date.strftime('%d/%m/%Y')}",
+            f"📌 下期學費繳交日期：{lesson_dates[-1].strftime('%d/%m/%Y')}",
             "",
             "上課時間："
         ] + [f"{day} {time}" for day, time in day_time_pairs.items()] + [
@@ -395,7 +407,7 @@ if st.button("生成收據單"):
         ]
         
         if skipped_holidays:
-            bill_text_lines += ["", "❌ 公眾假期 (休息):"] + [
+            bill_text_lines += ["", "❌ 公眾假期 (休息) / 取消上課日期:"] + [
                 f"- {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})" for d in skipped_holidays
             ]
         
