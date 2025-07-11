@@ -338,7 +338,7 @@ if st.button("生成收據單"):
         value_fee = calculate_value_added_fee(total_lessons)
         # assume no separate materials for value-added or adjust as needed
         opt_fee, opt_details = calculate_optional_items(optional_selections)
-        total_amount = main_fee + main_material + value_fee + value_material + opt_fee
+
 
         # Fill and download document
         doc_file = fill_template_doc(
