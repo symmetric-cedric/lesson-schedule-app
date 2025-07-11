@@ -12,161 +12,6 @@ from docx.text.paragraph import Paragraph
 # Display Logo (uncomment and set path if needed)
 st.image("logo.png", width=200)
 
-# Weekday and Holiday Setup
-weekday_map = {
-    "星期一": 0, "星期二": 1, "星期三": 2, "星期四": 3,
-    "星期五": 4, "星期六": 5, "星期日": 6
-}
-weekday_chinese = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
-
-public_holidays = {
-    "1 January 2025", "29 January 2025", "30 January 2025", "31 January 2025",
-    "4 April 2025", "18 April 2025", "19 April 2025", "21 April 2025",
-    "1 May 2025", "5 May 2025", "31 May 2025", "1 July 2025",
-    "1 October 2025", "7 October 2025", "29 October 2025",
-    "25 December 2025", "26 December 2025"
-}
-holiday_dates = set(datetime.strptime(d, "%d %B %Y").date() for d in public_holidays)
-
-template_path = "Testing.docx"
-
-lesson_time_options = [
-    "9:30-11:00", "10:00-11:30", "10:30-12:00", "11:00-12:30",
-    "11:30-13:00", "12:00-13:30", "13:30-15:00", "14:00-15:30",
-    "14:30-16:00", "15:00-16:30", "15:30-17:00", "16:00-17:30",
-    "16:30-18:00", "17:00-18:30", "17:30-19:00"
-]
-
-subject_options = [
-    "中文記憶閱讀", "英文拼音", "小一面試班", "小學銜接班", "小學精進班"
-]
-
-value_added_options = [
-    "英文拼音", "高效寫字", "聆聽訓練", "說話訓練",
-    "思維閱讀", "創意理解", "作文教學"
-]
-
-# Optional items configuration
-
-value_material = {
-    "英文拼音課本": {
-        "單本": 50
-    },
-    "高效寫字課本": {
-        "單本": 50
-    },
-    "創意理解課本": {
-        "單本": 50
-    },
-    "創意理解・語文工作紙": {
-        "4堂": 50,
-        "8堂": 100,
-        "12堂": 100,
-        "24堂": 150,
-        "36堂": 250,
-        "48堂": 300,
-        "72堂": 400,
-    },
-    "聆聽訓練教材": {
-        "4堂": 50,
-        "8堂": 100,
-        "12堂": 100,
-        "24堂": 150,
-        "36堂": 250,
-        "48堂": 300,
-        "72堂": 400,
-    },
-    "說話訓練教材": {
-        "4堂": 50,
-        "8堂": 100,
-        "12堂": 100,
-        "24堂": 150,
-        "36堂": 250,
-        "48堂": 300,
-        "72堂": 400,
-    },
-    "思維閱讀教材": {
-        "4堂": 50,
-        "8堂": 100,
-        "12堂": 100,
-        "24堂": 150,
-        "36堂": 250,
-        "48堂": 300,
-        "72堂": 400,
-    },
-    "作文教學工作紙": {
-        "4堂": 50,
-        "8堂": 100,
-        "12堂": 100,
-        "24堂": 150,
-        "36堂": 250,
-        "48堂": 300,
-        "72堂": 400,
-    },
-}
-
-
-optional_items_map = {
-    "試堂日報讀贈券：即日報讀可獲舊生推薦現金券": -100,
-    "試堂日報讀贈券：即日報讀可扣減試堂費": -200,
-    "現金到校繳付24堂學費，送現金券": -50,
-    "現金到校繳付36堂學費，送現金券": -50,
-    "現金到校繳付48堂學費，送現金券": -100,
-    "現金到校繳付72堂學費，送現金券": -100,
-}
-
-
-# Streamlit UI
-st.title(":calendar: 課程收據單生成器")
-
-# User Inputs
-student_name = st.text_input("學生姓名")
-branch_name = st.selectbox("分校名稱", [
-    "九龍灣(淘大)分校", "藍田(麗港城)分校", "青衣(青怡)分校",
-    "九龍站(港景峯)分校", "鑽石山(萬迪廣場)分校"
-])
-invoice_number = st.text_input("單號")
-total_lessons = st.selectbox("堂數", [4, 8, 10, 12, 24, 30, 36, 48, 72])
-
-st.subheader("上課日及時間")
-day_time_pairs = {}
-for day in weekday_map:
-    if st.checkbox(day):
-        day_time_pairs[day] = st.selectbox(f"{day} 上課時間", lesson_time_options, key=day)
-
-subjects = st.multiselect("主科", subject_options)
-value_added_courses = st.multiselect("增值課程", value_added_options)
-start_date = st.date_input("開始日期")
-
-# --- PREVIEW lesson dates for cancellation UI ---
-day_names_selected = list(day_time_pairs.keys())
-preview_lesson_dates, _ = generate_schedule(
-        total_lessons, day_names_selected, start_date
-    )
-show_cancel = st.checkbox("是否有取消上課日期？", value=False)
-cancel_holidays = []
-
-if show_cancel:
-    cancel_holidays = st.multiselect(
-        "取消上課日期",
-        options=preview_lesson_dates,
-        format_func=lambda d: d.strftime('%Y/%m/%d（%A）')
-    )
-
-holiday_dates.update(cancel_holidays)
-
-
-# UI: value-added materials selection with lesson count
-value_material_selections = {}
-for course in value_material:
-    if st.checkbox(course):
-        lesson_option = st.selectbox(
-            f"{course} - 選擇堂數", list(value_material[course].keys()), key=course
-        )
-        value_material_selections[course] = lesson_option
-
-# Use the defined map for optional selections
-optional_selections = st.multiselect("其他選項", list(optional_items_map.keys()))
 
 # Function Definitions
 
@@ -333,6 +178,169 @@ def fill_template_doc(
     doc.save(buf)
     buf.seek(0)
     return buf
+
+
+
+
+
+
+
+# Weekday and Holiday Setup
+weekday_map = {
+    "星期一": 0, "星期二": 1, "星期三": 2, "星期四": 3,
+    "星期五": 4, "星期六": 5, "星期日": 6
+}
+weekday_chinese = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
+
+public_holidays = {
+    "1 January 2025", "29 January 2025", "30 January 2025", "31 January 2025",
+    "4 April 2025", "18 April 2025", "19 April 2025", "21 April 2025",
+    "1 May 2025", "5 May 2025", "31 May 2025", "1 July 2025",
+    "1 October 2025", "7 October 2025", "29 October 2025",
+    "25 December 2025", "26 December 2025"
+}
+holiday_dates = set(datetime.strptime(d, "%d %B %Y").date() for d in public_holidays)
+
+template_path = "Testing.docx"
+
+lesson_time_options = [
+    "9:30-11:00", "10:00-11:30", "10:30-12:00", "11:00-12:30",
+    "11:30-13:00", "12:00-13:30", "13:30-15:00", "14:00-15:30",
+    "14:30-16:00", "15:00-16:30", "15:30-17:00", "16:00-17:30",
+    "16:30-18:00", "17:00-18:30", "17:30-19:00"
+]
+
+subject_options = [
+    "中文記憶閱讀", "英文拼音", "小一面試班", "小學銜接班", "小學精進班"
+]
+
+value_added_options = [
+    "英文拼音", "高效寫字", "聆聽訓練", "說話訓練",
+    "思維閱讀", "創意理解", "作文教學"
+]
+
+# Optional items configuration
+
+value_material = {
+    "英文拼音課本": {
+        "單本": 50
+    },
+    "高效寫字課本": {
+        "單本": 50
+    },
+    "創意理解課本": {
+        "單本": 50
+    },
+    "創意理解・語文工作紙": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+    "聆聽訓練教材": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+    "說話訓練教材": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+    "思維閱讀教材": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+    "作文教學工作紙": {
+        "4堂": 50,
+        "8堂": 100,
+        "12堂": 100,
+        "24堂": 150,
+        "36堂": 250,
+        "48堂": 300,
+        "72堂": 400,
+    },
+}
+
+
+optional_items_map = {
+    "試堂日報讀贈券：即日報讀可獲舊生推薦現金券": -100,
+    "試堂日報讀贈券：即日報讀可扣減試堂費": -200,
+    "現金到校繳付24堂學費，送現金券": -50,
+    "現金到校繳付36堂學費，送現金券": -50,
+    "現金到校繳付48堂學費，送現金券": -100,
+    "現金到校繳付72堂學費，送現金券": -100,
+}
+
+
+# Streamlit UI
+st.title(":calendar: 課程收據單生成器")
+
+# User Inputs
+student_name = st.text_input("學生姓名")
+branch_name = st.selectbox("分校名稱", [
+    "九龍灣(淘大)分校", "藍田(麗港城)分校", "青衣(青怡)分校",
+    "九龍站(港景峯)分校", "鑽石山(萬迪廣場)分校"
+])
+invoice_number = st.text_input("單號")
+total_lessons = st.selectbox("堂數", [4, 8, 10, 12, 24, 30, 36, 48, 72])
+
+st.subheader("上課日及時間")
+day_time_pairs = {}
+for day in weekday_map:
+    if st.checkbox(day):
+        day_time_pairs[day] = st.selectbox(f"{day} 上課時間", lesson_time_options, key=day)
+
+subjects = st.multiselect("主科", subject_options)
+value_added_courses = st.multiselect("增值課程", value_added_options)
+start_date = st.date_input("開始日期")
+
+# --- PREVIEW lesson dates for cancellation UI ---
+day_names_selected = list(day_time_pairs.keys())
+preview_lesson_dates, _ = generate_schedule(
+        total_lessons, day_names_selected, start_date
+    )
+show_cancel = st.checkbox("是否有取消上課日期？", value=False)
+cancel_holidays = []
+
+if show_cancel:
+    cancel_holidays = st.multiselect(
+        "取消上課日期",
+        options=preview_lesson_dates,
+        format_func=lambda d: d.strftime('%Y/%m/%d（%A）')
+    )
+
+holiday_dates.update(cancel_holidays)
+
+
+# UI: value-added materials selection with lesson count
+value_material_selections = {}
+for course in value_material:
+    if st.checkbox(course):
+        lesson_option = st.selectbox(
+            f"{course} - 選擇堂數", list(value_material[course].keys()), key=course
+        )
+        value_material_selections[course] = lesson_option
+
+# Use the defined map for optional selections
+optional_selections = st.multiselect("其他選項", list(optional_items_map.keys()))
+
 
 
 
