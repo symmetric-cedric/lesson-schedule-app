@@ -10,7 +10,7 @@ from docx.oxml.ns import qn
 from docx.text.paragraph import Paragraph
 
 # Display Logo (uncomment and set path if needed)
-# st.image("logo.png", width=200)
+st.image("logo.png", width=200)
 
 # Weekday and Holiday Setup
 weekday_map = {
