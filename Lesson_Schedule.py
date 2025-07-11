@@ -305,13 +305,10 @@ def fill_template_doc(
         current_para = insert_paragraph_after(current_para, "其他:")
         for opt, amt in optional_items:
             current_para = insert_paragraph_after(current_para, f"{opt}：{'+' if amt > 0 else ''}${amt}")
-        total = (
-            main_tuition +
-            main_material +
-            value_tuition +
-            material_total +
-            sum(amt for _, amt in optional_items)
-        )
+
+
+        value_material_total = sum(value_material[course][lesson] for course, lesson in value_material_selections.items() if course in value_material and lesson in value_material[course])
+        total_amount = main_fee + main_material + value_fee + value_material_total + opt_fee
         insert_paragraph_after(current_para, f"總額：= ${total}")
 
     buf = BytesIO()
