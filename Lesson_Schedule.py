@@ -140,13 +140,9 @@ start_date = st.date_input("開始日期")
 
 # --- PREVIEW lesson dates for cancellation UI ---
 day_names_selected = list(day_time_pairs.keys())
-if start_date and day_names_selected and total_lessons > 0:
-    preview_lesson_dates, _ = generate_schedule(
+preview_lesson_dates, _ = generate_schedule(
         total_lessons, day_names_selected, start_date
     )
-else:
-    preview_lesson_dates = []
-
 show_cancel = st.checkbox("是否有取消上課日期？", value=False)
 cancel_holidays = []
 
