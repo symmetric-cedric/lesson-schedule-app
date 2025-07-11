@@ -217,9 +217,9 @@ def fill_template_doc(
     if fee_idx is not None:
         base_para = doc.paragraphs[fee_idx]
     
-        current_para = insert_paragraph_after(base_para, f"主科：+${main_tuition}")
+        current_para = insert_paragraph_after(base_para, f"主科（{main_subjects_str}）：+${main_tuition}")
         current_para = insert_paragraph_after(current_para, f"小組活動教材：+${main_material}")
-        current_para = insert_paragraph_after(current_para, f"增值課程學費：+${value_tuition}")
+        current_para = insert_paragraph_after(current_para, f"增值課程（{value_added_courses_str}）：+${value_tuition}")
         current_para = insert_paragraph_after(current_para, f"增值課程教材：+${value_material}")
         current_para = insert_paragraph_after(current_para, "其他:")
         for opt, amt in optional_items:
