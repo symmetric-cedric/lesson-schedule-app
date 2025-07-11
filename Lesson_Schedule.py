@@ -164,7 +164,8 @@ def fill_template_doc(
     optional_items,
     start_date, lesson_dates, week_range,
     day_time_pairs, skipped_holidays,
-    template_path
+    template_path,
+    subjects, value_added_courses
 ):
     doc = Document(template_path)
     
@@ -183,6 +184,9 @@ def fill_template_doc(
         "九龍站(港景峯)分校": "MISS MAN EDUCATION LIMITED\nFPS: 103 779 914",
         "鑽石山(萬迪廣場)分校": "MISS MAN EDUCATION LIMITED\nFPS: 103 779 914"
     }
+    main_subjects_str = '、'.join(subjects)
+    value_added_courses_str = '、'.join(value_added_courses)
+
     
     # Replace placeholders
     start_date_str = start_date.strftime('%d/%m/%Y')
@@ -261,7 +265,7 @@ if st.button("生成收據單"):
             opt_details,
             start_date, lesson_dates, week_range,
             day_time_pairs, skipped_holidays,
-            template_path
+            template_path, subjects, value_added_courses
         )
         st.success("收據單已生成！")
         st.download_button(
