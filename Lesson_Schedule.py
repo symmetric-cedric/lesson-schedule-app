@@ -138,17 +138,7 @@ subjects = st.multiselect("主科", subject_options)
 value_added_courses = st.multiselect("增值課程", value_added_options)
 start_date = st.date_input("開始日期")
 
-show_cancel = st.checkbox("是否有取消上課日期？", value=False)
-cancel_holidays = []
-# If checkbox is ticked, show multiselect or date_input for selection
-if show_cancel:
-    cancel_holidays = st.multiselect(
-        "取消上課日期",
-        options=lesson_dates,
-        format_func=lambda d: d.strftime('%Y/%m/%d（%A）'),
-    )
 
-holiday_dates.update(cancel_holidays)
 
 # UI: value-added materials selection with lesson count
 value_material_selections = {}
@@ -342,9 +332,23 @@ if st.button("生成收據單"):
         lesson_dates, skipped_holidays = generate_schedule(
             total_lessons, list(day_time_pairs.keys()), start_date
         )
+        
         week_range = calculate_week_range(
             total_lessons, len(day_time_pairs), lesson_dates
         )
+
+        show_cancel = st.checkbox("是否有取消上課日期？", value=False)
+        cancel_holidays = []
+        # If checkbox is ticked, show multiselect or date_input for selection
+        if show_cancel:
+            cancel_holidays = st.multiselect(
+                "取消上課日期",
+                options=lesson_dates,
+                format_func=lambda d: d.strftime('%Y/%m/%d（%A）'),
+            )
+        
+        holiday_dates.update(cancel_holidays)
+        
         # Fees
         main_fee, main_material = calculate_main_course_fee(len(day_time_pairs), total_lessons)
         value_fee = calculate_value_added_fee(total_lessons)
