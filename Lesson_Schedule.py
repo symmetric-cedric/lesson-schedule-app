@@ -10,7 +10,7 @@ from docx.oxml.ns import qn
 from docx.text.paragraph import Paragraph
 
 # Display Logo (uncomment and set path if needed)
-st.image("logo.png", width=200)
+#st.image("logo.png", width=200)
 
 
 # Function Definitions
@@ -55,7 +55,7 @@ def calculate_main_course_fee(lessons_per_week, total_lessons):
 
 
 def calculate_value_added_fee(total_lessons, value_added_courses):
-    if not selected_courses:
+    if not value_added_courses:
         return 0
 
     fee = 0
