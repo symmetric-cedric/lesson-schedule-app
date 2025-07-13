@@ -53,11 +53,23 @@ def calculate_main_course_fee(lessons_per_week, total_lessons):
     return pricing.get((lessons_per_week, total_lessons)) or pricing.get((None,total_lessons),(0,0))
 
 
-def calculate_value_added_fee(total_lessons):
-    if total_lessons in (4,8): return 100 * total_lessons
-    if total_lessons == 12:     return 75 * total_lessons
-    if total_lessons == 24:     return 50 * total_lessons
-    return 0
+
+def calculate_value_added_fee(total_lessons, value_added_courses):
+    if not selected_courses:
+        return 0
+
+    fee = 0
+    for _ in value_added_courses:
+        if total_lessons in (4, 8):
+            fee += 100 * total_lessons
+        elif total_lessons == 12:
+            fee += 75 * total_lessons
+        elif total_lessons == 24:
+            fee += 50 * total_lessons
+        else:
+            fee += 0  # Default or unsupported lesson count
+    return fee
+
 
 
 def calculate_optional_items(selected):
@@ -360,7 +372,7 @@ if st.button("生成收據單"):
         
         # Fees
         main_fee, main_material = calculate_main_course_fee(len(day_time_pairs), total_lessons)
-        value_fee = calculate_value_added_fee(total_lessons)
+        value_fee = calculate_value_added_fee(total_lessons, value_added_courses)
         # assume no separate materials for value-added or adjust as needed
         opt_fee, opt_details = calculate_optional_items(optional_selections)
 
