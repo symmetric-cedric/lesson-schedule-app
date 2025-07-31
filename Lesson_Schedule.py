@@ -175,7 +175,12 @@ def fill_template_doc(
         
         # 計算總額
         total_amount = main_fee + main_material + value_fee + value_material_total + opt_fee
-        insert_paragraph_after(current_para, f"總額：= ${total_amount} (銀行轉賬) / ${total_amount-50}(現金到校繳付)")
+        if total_lessons == 24 or 36:
+            insert_paragraph_after(current_para, f"總額：= ${total_amount} (銀行轉賬) / ${total_amount-50}(現金到校繳付)")
+        elif total_lessons == 48 or 72:
+            insert_paragraph_after(current_para, f"總額：= ${total_amount} (銀行轉賬) / ${total_amount-100}(現金到校繳付)")
+        else:
+            insert_paragraph_after(current_para, f"總額：= ${total_amount} (銀行轉賬)")
 
 
     buf = BytesIO()
