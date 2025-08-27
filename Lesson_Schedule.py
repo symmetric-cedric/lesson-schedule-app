@@ -64,7 +64,7 @@ def calculate_value_added_fee(total_lessons, value_added_courses):
             fee += 100 * total_lessons
         elif total_lessons == 12:
             fee += 75 * total_lessons
-        elif total_lessons == 24:
+        elif total_lessons >= 24:
             fee += 50 * total_lessons
         else:
             fee += 0  # Default or unsupported lesson count
@@ -202,12 +202,15 @@ weekday_map = {
 weekday_chinese = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
 
 public_holidays = {
-    "1 January 2025", "29 January 2025", "30 January 2025", "31 January 2025",
-    "4 April 2025", "18 April 2025", "19 April 2025", "21 April 2025",
-    "1 May 2025", "5 May 2025", "31 May 2025", "1 July 2025",
     "1 October 2025", "7 October 2025", "29 October 2025",
-    "25 December 2025", "26 December 2025"
+    "25 December 2025", "26 December 2025", 
+    "1 January 2026", "17 February 2026", "18 February 2026", "19 February 2026",
+    "3 April 2026", "4 April 2026", "6 April 2026", "7 April 2026",
+    "1 May 2026", "25 May 2026", "19 June 2026", "1 July 2026",
+    "26 September 2026", "1 October 2026", "19 October 2026",
+    "25 December 2026", "26 December 2026"
 }
+
 holiday_dates = set(datetime.strptime(d, "%d %B %Y").date() for d in public_holidays)
 
 template_path = "Testing.docx"
