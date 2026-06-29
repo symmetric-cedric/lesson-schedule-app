@@ -202,14 +202,15 @@ weekday_map = {
 weekday_chinese = ['星期一', '星期二', '星期三', '星期四', '星期五', '星期六', '星期日']
 
 public_holidays = {
-    "1 October 2025", "7 October 2025", "29 October 2025",
-    "25 December 2025", "26 December 2025", 
-    "1 January 2026", "17 February 2026", "18 February 2026", "19 February 2026",
-    "3 April 2026", "4 April 2026", "6 April 2026", "7 April 2026",
-    "1 May 2026", "25 May 2026", "19 June 2026", "1 July 2026",
-    "26 September 2026", "1 October 2026", "19 October 2026",
-    "25 December 2026", "26 December 2026"
+    "1 July 2026", "26 September 2026", "1 October 2026", "19 October 2026",
+    "25 December 2026", "26 December 2026", 
+    "1 January 2027", "6 February 2027", "8 February 2027", "9 February 2027",
+    "26 March 2027", "27 March 2027", "29 March 2027", "5 April 2027",
+    "1 May 2027", "13 May 2027", "9 June 2027", "1 July 2027",
+    "16 September 2027", "1 October 2027", "8 October 2027",
+    "25 December 2027", "27 December 2027"
 }
+
 
 holiday_dates = set(datetime.strptime(d, "%d %B %Y").date() for d in public_holidays)
 
