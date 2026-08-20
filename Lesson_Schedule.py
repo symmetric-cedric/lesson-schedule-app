@@ -432,7 +432,7 @@ if st.button("生成收據單"):
             "上課時間："
         ] + [f"{day} {time}" for day, time in day_time_pairs.items()] + [
             "",
-            "📅 上課日期安排："
+            "📅 上課日期安排 (上課及補堂日期須由老師更新)："
         ] + [
             f"{i}. {d.strftime('%d/%m/%Y')} ({weekday_chinese[d.weekday()]})"
             for i, d in enumerate(lesson_dates, 1)
